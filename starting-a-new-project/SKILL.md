@@ -38,17 +38,24 @@ Use `ask_user_input` to collect bounded choices (tech stack, execution method pr
 
 Execute all of these directly via Notion MCP tools. Do NOT create tasks for this ... it's management work.
 
-**2a. Add Project to TASK QUEUE select options**
+**2a. Create Project in Paperclip**
 
-Use `notion-update-data-source` on `5da08552-f08b-4734-9784-3019be7dd1a2`:
+Create a new project in the Paperclip company via the API:
+
 ```
-ALTER COLUMN "Project" SET SELECT({all existing options}, '{NewProject}':color)
+POST $PAPERCLIP_API_URL/api/companies/$PAPERCLIP_COMPANY_ID/projects
+{
+  "name": "{ProjectName}",
+  "repoUrl": "https://github.com/michaelkd01/{folder-name}",
+  "executionWorkspacePolicy": {
+    "enabled": true,
+    "defaultMode": "shared_workspace",
+    "strategy": "project_primary"
+  }
+}
 ```
 
-**CRITICAL:** You must restate ALL existing project options when adding a new one. Omitted options are silently deleted. Query the current options first.
-
-Current known projects (verify before using):
-AI-BOS, AIAssistant, AIFund, Arc, Bespoke, BIStack, CaddieAI, ContextEngine, Delegator, Orchestrator, Propell, ScreenTimeMath, SOABridge
+If operating in Claude.ai chat, use the Paperclip MCP create_project tool. If operating as a Paperclip agent, use curl with the API.
 
 **2b. Add Project to PROJECT DOCS select options**
 
@@ -76,23 +83,28 @@ Set `Project` and `Status: Active` on all docs.
 
 ### Phase 3 ... Scaffold Task
 
-Create a scaffold task in the TASK QUEUE:
+Create a scaffold issue in Paperclip:
 
+Title: Scaffold {ProjectName} repo
+Status: todo
+Assignee: Executor agent
+Project: {ProjectName} (created in Step 2a)
+
+Description:
 ```
-Name: Scaffold {ProjectName} repo
-Project: {ProjectName}
-Task Type: Scaffold
-Category: Chore
-Priority: 1 - High
-Branch Strategy: direct-main
-Status: Ready
-Execution Method: Pipeline
-Self Modifying: __NO__
-Max Iterations: 5
-Human Hours Est: 0.25
-Sort Order: {next available}
-Repo Path: /Users/michaeldavidson/Developer/{folder-name}
-Acceptance Criteria: {stack-specific, see below}
+<!-- metadata -->
+task_type: Scaffold
+category: Chore
+priority: 1-High
+branch_strategy: direct-main
+max_iterations: 5
+repo_path: /Users/michaeldavidson/Developer/{folder-name}
+execution_method: Pipeline
+<!-- /metadata -->
+
+## Acceptance Criteria
+
+{stack-specific AC ... see below}
 ```
 
 **Python scaffold AC:**
@@ -152,10 +164,10 @@ Post a summary to the user:
 ```
 Project {ProjectName} ({Code}) initialized:
 - Notion: PROJECT DOCS created (Overview, Architecture, Roadmap, Chat Log)
-- TASK QUEUE: Project select option added
-- Scaffold task: TQ-{ID} at Sort Order {N}, Status: Ready
+- Paperclip: Project created with workspace policy
+- Scaffold issue: created, assigned to Executor, Status: todo
 - Repo path: /Users/michaeldavidson/Developer/{folder-name}
-- Next: Pipeline picks up scaffold, then Clone Map update for Mac Mini
+- Next: Executor picks up scaffold on next heartbeat, then Clone Map update for Mac Mini
 ```
 
 ## Post-Scaffold Checklist (after pipeline runs the scaffold)

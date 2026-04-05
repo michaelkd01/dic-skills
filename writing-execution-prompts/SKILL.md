@@ -18,10 +18,10 @@ Every prompt must contain these sections in order:
 ### 1. Title Block
 
 ```
-# {TQ-ID}: {Task Name}
+# {Issue ID}: {Task Name}
 ```
 
-If no TQ-ID exists (ad hoc execution), use a descriptive title.
+If no issue ID exists (ad hoc execution), use a descriptive title.
 
 ### 2. Context (optional but recommended)
 
@@ -81,13 +81,13 @@ This must be the FINAL numbered step. It must be a separate, explicitly numbered
 ```
 git config user.email "michaelkd01@gmail.com" && git config user.name "Michael Davidson"
 git checkout -b {branch-name}
-git add -A && git commit -m "{TQ-ID}: {descriptive message}" && git push origin {branch-name}
+git add -A && git commit -m "{Issue ID}: {descriptive message}" && git push origin {branch-name}
 ```
 
 **For direct-main tasks:**
 ```
 git config user.email "michaelkd01@gmail.com" && git config user.name "Michael Davidson"
-git add -A && git commit -m "{TQ-ID}: {descriptive message}" && git push origin main
+git add -A && git commit -m "{Issue ID}: {descriptive message}" && git push origin main
 ```
 
 The git identity lines are NOT optional. macOS defaults to hostname email which Vercel blocks.
@@ -107,8 +107,8 @@ Add task-specific rules as needed (e.g., "Do not modify files outside dashboard/
 
 ## Branch Naming Convention
 
-- Pipeline tasks: `tq-{sort-order}-{kebab-case-description}`
-- Manual tasks: `tq-{sort-order}-{kebab-case-description}` or `fix/{kebab-case-description}`
+- Pipeline tasks: `issue-{id}-{kebab-case-description}`
+- Manual tasks: `issue-{id}-{kebab-case-description}` or `fix/{kebab-case-description}`
 - Security tasks: `sec-{number}-{kebab-case-description}`
 
 ## Concurrency Classification
@@ -154,12 +154,12 @@ Claude Code pushes to `origin` but leaves no local tracking branch. This sequenc
 
 Before delivering any prompt, verify ALL of the following:
 
-- [ ] Title includes TQ-ID (if applicable)
+- [ ] Title includes issue identifier (if applicable)
 - [ ] All file paths are fully qualified (no placeholders, no `~` in non-shell contexts)
 - [ ] Git identity block is present before commit step
 - [ ] Commit and push is the FINAL numbered step, explicitly separated
 - [ ] Branch name matches the branch strategy (feature-branch vs direct-main)
-- [ ] Commit message includes TQ-ID
+- [ ] Commit message includes issue identifier
 - [ ] Verification step exists (build, test, lint as appropriate)
 - [ ] Rules block is present
 - [ ] Rules block includes "Do not remove existing functionality unless explicitly instructed"
@@ -173,7 +173,7 @@ Before delivering any prompt, verify ALL of the following:
 
 Each prompt is delivered as a **separate linked Markdown artifact** (file in `/mnt/user-data/outputs/`). Planning context and concurrency summary stay in the chat body, not in the prompt file.
 
-File naming: `{TQ-ID}-{kebab-case-description}.md` (e.g., `TQ-337-hardcode-inception-date.md`)
+File naming: `{issue-id}-{kebab-case-description}.md` (e.g., `issue-42-hardcode-inception-date.md`)
 
 ## Anti-Patterns (Never Do These)
 

@@ -10,17 +10,15 @@ description: Procedural checklist for validating task execution outputs and issu
 This skill is triggered in two modes:
 
 1. **Test Spec Validation** ... after the Planner generates a test specification (Step 3.5 of scoping). The goal is to validate the test spec quality before execution begins.
-2. **Execution Validation** ... after a Claude Code execution completes and the user shares the output for review. The goal is to validate the work against the original plan, detect drift, and issue a clear verdict.
-
-All status transitions must comply with ADR-003 valid_transitions map.
+2. **Execution Validation** ... after a Claude Code execution completes and the output is available for review. The goal is to validate the work against the original plan, detect drift, and issue a clear verdict.
 
 Role: Supervisor. Do not plan or execute ... only validate and instruct.
 
 ## Resources
 
-- **TASK QUEUE database**: `collection://5da08552-f08b-4734-9784-3019be7dd1a2`
-- **PROJECT DOCS database**: `3083257a-fd0a-8088-bbcc-000bdd488971`
-- **Architecture & Decisions page**: `3163257a-fd0a-8171-894a-eb2b6a0d297d`
+- **TASK SYSTEM**: Paperclip issues via API (`$PAPERCLIP_API_URL/api/companies/$PAPERCLIP_COMPANY_ID/issues`)
+- **PROJECT DOCS database** (Notion): `3083257a-fd0a-8088-bbcc-000bdd488971`
+- **Architecture & Decisions page** (Notion): `3163257a-fd0a-8171-894a-eb2b6a0d297d`
 
 ---
 
@@ -30,8 +28,8 @@ Triggered when the Planner completes Step 3.5 (Generate Test Specification) for 
 
 ### A1. Load the Task
 
-1. Fetch the task from Notion by TQ-ID or page ID
-2. Read: Acceptance Criteria, Project, Task Type, Skip Tests
+1. Read the Paperclip issue by ID
+2. Extract from description: Acceptance Criteria, Project, Task Type, Skip Tests
 
 If Skip Tests = YES or Task Type ≠ Code, this mode does not apply. Return control to Planner.
 
@@ -92,27 +90,26 @@ Test Spec Verdict: FLAGGED
 Reason: {why this can't be resolved without human input}
 Question for user: {specific question}
 ```
-Send via Slack DM with task link. Await response before proceeding.
+Await response before proceeding.
 
 ---
 
 ## Mode B: Execution Validation
 
-Triggered after a Claude Code execution completes and the user shares the output for review.
+Triggered after a Claude Code execution completes and the output is available for review.
 
 ### B1. Load the Task
 
-1. Fetch the task from Notion by TQ-ID or page ID
-2. Read ALL properties, especially:
+1. Read the Paperclip issue by ID
+2. Extract from description metadata block and body:
    - Acceptance Criteria (the definition of done)
-   - Shared Files (cross-task dependency signal)
    - Branch Strategy
    - Execution Method
    - Project
 
 ### B2. Load Project Context
 
-Before validating, fetch:
+Before validating, fetch from Notion:
 
 1. **Architecture & Decisions doc** for the project
 2. **Overview doc** for the project
@@ -135,7 +132,7 @@ For each AC item, assess:
 **FAIL** ... criterion is not met or contradicted by the output.
 
 Sources of evidence:
-- Execution output pasted by the user
+- Execution output (visible in Paperclip issue comments/run transcript)
 - Git diff / commit messages
 - Build/test/lint output
 - File contents visible in the output
@@ -159,8 +156,7 @@ Beyond the AC, verify:
 - [ ] No files were modified outside the stated scope
 - [ ] No new dependencies were added without justification
 - [ ] No existing ADRs were violated
-- [ ] No shared files (from `Shared Files` property) were modified in a way that could break other tasks
-- [ ] Commit message follows conventional format and includes TQ-ID
+- [ ] Commit message follows conventional format and includes issue identifier
 - [ ] Branch strategy was followed (feature-branch vs direct-main)
 - [ ] No existing functionality was removed (unless AC explicitly required it)
 
@@ -181,7 +177,7 @@ Issues:
 1. {AC item}: {what's wrong and exactly how to fix it}
 2. {drift item}: {what happened and what needs to change}
 
-Fix prompt: {if a Claude Code prompt is needed, produce one following the writing-prompts-for-claude-code skill}
+Fix prompt: {if a Claude Code prompt is needed, produce one following the writing-execution-prompts skill}
 ```
 
 **FIX-MAJOR** ... Significant AC items failed or major drift detected. Requires re-execution.
@@ -204,31 +200,27 @@ Reason: {why the output is not salvageable}
 Next step: {re-scope from scratch / re-plan with different approach}
 ```
 
-### B6. Update Notion
+### B6. Update the Issue
 
 Based on verdict:
 
 **PASS:**
-1. Set `Supervisor Result` → `PASS`
-2. Set `Status` → `Done` (for batch/management/scaffold tasks) or `Awaiting Test` (for code tasks that need human verification)
-3. Update `Execution Log` with a summary of what was delivered
-4. Trigger deploy if applicable (deploy hook or note merge sequence)
+1. Add a comment with the PASS verdict and evidence summary
+2. Set status to `done` (for scaffold/management tasks) or `in_review` (for code tasks needing human verification)
+3. Trigger deploy if applicable (deploy hook or note merge sequence)
 
 **FIX-MINOR:**
-1. Set `Supervisor Result` → `FIX-MINOR`
-2. Leave `Status` as-is (user will re-run after fix)
-3. Append fix instructions to task comments via `notion-create-comment`
+1. Add a comment with specific fix instructions
+2. Leave status as-is (will be re-run after fix)
 
 **FIX-MAJOR:**
-1. Set `Supervisor Result` → `FIX-MAJOR`
-2. Perform three-field reset: Status → Ready/Manual Queue, Execution Log → '', Blocked Reason → ''
-3. Increment Retry Count if applicable
-4. Add diagnostic comment to the task
+1. Add a comment with diagnostic analysis
+2. Set status back to `todo` for re-execution
+3. Assign back to Executor (or Pre-planner if AC needs revision)
 
 **REJECT:**
-1. Set `Supervisor Result` → `REJECT`
-2. Set Status → `Draft` (back to scoping)
-3. Add comment explaining why
+1. Add a comment explaining why
+2. Set status to `backlog` (back to scoping)
 
 ### B7. Deploy (PASS only)
 
@@ -251,7 +243,7 @@ Every PASS verdict must include deployment:
 
 - Issuing PASS without checking Architecture & Decisions (allows drift)
 - Issuing FIX without a concrete fix instruction or revised prompt
-- Marking a task Done when it should be Awaiting Test (code tasks with UI/UX impact need human verification)
+- Marking a task Done when it should be in review (code tasks with UI/UX impact need human verification)
 - Forgetting to trigger deployment after a PASS
 - Accepting "no tests written" when the AC includes test expectations
 - Accepting modified test assertions without flagging (test contract violation)

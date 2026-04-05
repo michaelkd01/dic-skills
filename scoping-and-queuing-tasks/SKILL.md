@@ -1,30 +1,21 @@
 ---
 name: scoping-and-queuing-tasks
-description: Procedural checklist for scoping a task from first mention to Ready/Manual Queue with a Claude Code prompt
+description: Procedural checklist for scoping a task from first mention to Ready with a Claude Code prompt
 ---
 
 # Task Scoping Workflow
 
 ## Context
 
-This workflow is triggered whenever the user references a task to work on, whether by TQ-ID, Sort Order, name, or description. It covers the full path from "let's do X" to a task that is either Ready (pipeline) or Manual Queue (human) with a validated Claude Code prompt.
-
-All status transitions must comply with the ADR-003 valid_transitions map. Invalid transitions are rejected by the state machine in code.
+This workflow is triggered whenever the user references a task to work on, whether by issue ID, name, or description. It covers the full path from "let's do X" to a task that is ready for execution with a validated prompt.
 
 Role: Development Planner throughout. Switch to Supervisor only if validating a completed execution.
 
 ## Resources
 
-- **TASK QUEUE database**: `collection://5da08552-f08b-4734-9784-3019be7dd1a2`
-- **TASK QUEUE views**:
-  - Active: `view://3183257a-fd0a-80c0-9e04-000cf43fb336`
-  - Draft: `view://3183257a-fd0a-809b-9e17-000c8f113a01`
-  - Pre-planning: `view://3183257a-fd0a-80cb-88ab-000c29e1da3a`
-  - Needs-attention: `view://3183257a-fd0a-80d5-a23f-000c635b11ca`
-  - Awaiting-test: `view://31b3257a-fd0a-8007-b05d-000cdfe3c733`
-- **PROJECT DOCS database**: `3083257a-fd0a-8088-bbcc-000bdd488971`
-- **Architecture & Decisions page**: `3163257a-fd0a-8171-894a-eb2b6a0d297d`
-- **Notion parent for new tasks**: `{'data_source_id': '5da08552-f08b-4734-9784-3019be7dd1a2'}`
+- **TASK SYSTEM**: Paperclip issues via API (`$PAPERCLIP_API_URL/api/companies/$PAPERCLIP_COMPANY_ID/issues`)
+- **PROJECT DOCS database** (Notion): `3083257a-fd0a-8088-bbcc-000bdd488971`
+- **Architecture & Decisions page** (Notion): `3163257a-fd0a-8171-894a-eb2b6a0d297d`
 
 ## Workflow
 
@@ -33,9 +24,9 @@ Role: Development Planner throughout. Switch to Supervisor only if validating a 
 Determine whether this is an existing task or a new one.
 
 **Existing task:**
-1. Search Notion TASK QUEUE by TQ-ID, Sort Order, or name
-2. Fetch the full page (`notion-fetch` with page ID)
-3. Read ALL properties: Name, Status, Project, Task Type, Category, Priority, Branch Strategy, Max Iterations, Human Hours Est, Sort Order, Repo Path, Acceptance Criteria, Shared Files, Execution Log, Blocked Reason, Execution Method
+1. Search Paperclip issues by name or ID (GET `/api/companies/{companyId}/issues`)
+2. Read the full issue including description and comments
+3. Extract properties from the description metadata block (if present): Project, Task Type, Category, Priority, Branch Strategy, Max Iterations, Repo Path, Acceptance Criteria
 
 **New task:**
 1. Confirm scope with the user before creating
@@ -67,7 +58,7 @@ Review the existing AC (or draft new AC) against:
 - [ ] Criteria reference specific files or modules where possible
 - [ ] Criteria do not contradict Architecture & Decisions doc
 - [ ] Scope is achievable within Max Iterations (default 15, increase for complex tasks)
-- [ ] If this is a re-run of a failed task: read the Execution Log to understand what went wrong, and adjust AC or add recovery notes accordingly
+- [ ] If this is a re-run of a failed task: read the execution log comments to understand what went wrong, and adjust AC or add recovery notes accordingly
 
 If AC needs changes, propose them to the user and get confirmation before proceeding.
 
@@ -99,14 +90,14 @@ If AC needs changes, propose them to the user and get confirmation before procee
    - [ ] Tests reference the project's test runner from CLAUDE.md
    - [ ] Test file paths follow project conventions
 
-4. **Supervisor validation (Option B):**
+4. **Supervisor validation:**
    - Hand the test spec to the Supervisor role for validation
    - Supervisor checks the four criteria above
    - If all pass ... auto-approved, proceed to Step 4
-   - If any fail ... flag to user via Slack DM with specific deficiency
-   - Task cannot move to Ready until test spec is approved
+   - If any fail ... flag to user with specific deficiency
+   - Task cannot proceed until test spec is approved
 
-5. Record the approved test spec in the task's Acceptance Criteria or as a linked comment. The execution prompt will reference it.
+5. Record the approved test spec in the issue description or as a comment. The execution prompt will reference it.
 
 **Output format:**
 
@@ -127,69 +118,48 @@ Command: {from CLAUDE.md, e.g., pytest, npm run test}
 Coverage target: all new/modified code paths
 ```
 
-### Step 4 ... Create or Update the Task in Notion
+### Step 4 ... Create or Update the Paperclip Issue
 
-**Required properties for every task:**
+**Required fields for every issue:**
 
-| Property | Rule |
-|---|---|
-| Name | Descriptive, imperative form |
-| Status | See decision rules below |
-| Project | Must match an existing select option |
-| Task Type | Code / Management / Research / Scaffold |
-| Category | Bug / Chore / Feature |
-| Priority | 0 - Extreme / 1 - High / 2 - Mid / 3 - Low |
-| Branch Strategy | `feature-branch` or `direct-main` |
-| Max Iterations | Default 15. Increase for complex tasks. |
-| Human Hours Est | MANDATORY. See estimation guide below. Never leave blank or zero. |
-| Sort Order | Next available (query Active view to find max) |
-| Repo Path | Absolute path: `/Users/michaeldavidson/Developer/{repo}` |
-| Acceptance Criteria | Validated in Step 3 |
-| Execution Method | Pipeline / Manual / Chat |
-| Self Modifying | __YES__ if task modifies src/orchestrator/ (pipeline source code). __NO__ otherwise. |
+| Field | Location | Rule |
+|---|---|---|
+| Title | Issue title | Descriptive, imperative form |
+| Status | Issue status | See decision rules below |
+| Project | Issue project | Must match a Paperclip project in this company |
+| Assignee | Issue assignee | Set to the appropriate agent |
+| Description | Issue body | Contains AC, metadata block, and execution prompt |
 
-**Status decision rules:**
+**Description metadata block** (include at top of every issue description):
 
-- Pipeline task (Execution Method = Pipeline): **Pre-planning** ... the pre-planner generates the execution prompt and promotes to Ready automatically
-- Manual task (orchestrator `src/` changes, or user wants to run it): **Pre-planning** ... the pre-planner generates the execution prompt, then promotes to Manual Queue (not Ready). You grab the prompt from Notion and run it manually whenever you like.
-- Needs more scoping: **Draft** (not yet ready for pre-planner)
-- Management task (Notion-only): do NOT create a task ... handle directly in chat
-- Only use **Ready** when you've written the execution prompt yourself in chat and want the pipeline to pick it up immediately (bypasses pre-planner)
-
-**Three-field reset (for re-running a failed/blocked task):**
-These three fields must be cleared together. Missing one causes stale data to persist.
 ```
-Status → Ready (or Manual Queue)
-Execution Log → ''
-Blocked Reason → ''
+<!-- metadata -->
+task_type: Code | Scaffold | Management | Research
+category: Bug | Chore | Feature
+priority: 0-Extreme | 1-High | 2-Mid | 3-Low
+branch_strategy: feature-branch | direct-main
+max_iterations: 15
+repo_path: /Users/michaeldavidson/Developer/{repo}
+execution_method: Pipeline | Manual
+<!-- /metadata -->
+
+## Acceptance Criteria
+
+{validated AC from Step 3}
 ```
 
-Also reset `Iterations Used → 0` if the task previously executed.
+**Status decision rules (Paperclip statuses):**
 
-**Human Hours Estimation Guide:**
+- Pipeline task: **todo** assigned to Executor ... the execution prompt is in the description, Executor picks it up on next heartbeat
+- Needs Pre-planner scoping: **todo** assigned to Pre-planner
+- Manual task: **todo** assigned to no one, labelled "manual" ... you grab the prompt and run it manually
+- Needs more scoping: **backlog** (not yet ready for any agent)
+- Management task (no code changes): do NOT create an issue ... handle directly in chat
 
-Estimate how long this task would take a competent human developer working manually (no AI). This is the baseline for leverage ratio reporting.
-
-| Estimate | When to use |
-|---|---|
-| 0.25 | Single-file change, config tweak, scaffold, property backfill |
-| 0.5 | Small feature or fix touching 1-3 files with tests |
-| 1.0 | Multi-file feature, new API route, moderate refactor |
-| 2.0 | Cross-cutting change, new subsystem, significant architecture work |
-| 3.0+ | Large feature spanning multiple modules, new project phase |
-
-When in doubt, round up. An overestimate is better than a missing estimate.
-
-**Validation gate (before proceeding to Step 5):**
-
-Verify every required property in the table above is set. Specifically check:
-- [ ] Human Hours Est is set and > 0
-- [ ] Repo Path is an absolute path (starts with `/Users/`)
-- [ ] Execution Method is set
-- [ ] Sort Order is set and unique
-- [ ] Branch Strategy is set
-
-Do not produce a Claude Code prompt until all five are confirmed.
+**For re-running a failed task:**
+- Set status back to todo
+- Clear the execution log (or add a comment noting the reset)
+- Assign to Executor
 
 ### Step 5 ... Produce the Claude Code Prompt
 
@@ -204,6 +174,8 @@ Follow the **writing-execution-prompts** skill exactly. Key reminders:
 7. **Test Contract section present** (for Code tasks with approved test spec)
 
 Deliver the prompt as a linked Markdown artifact.
+
+Include the execution prompt in the Paperclip issue description (after the metadata block and AC).
 
 ### Step 6 ... Provide the Execution Command
 
@@ -229,17 +201,12 @@ Every completed fix must include deployment:
 
 ## Common Mistakes to Avoid
 
-- Forgetting to set Human Hours Est (breaks leverage ratio reporting, frequently missed)
-- Forgetting to set Repo Path (causes pipeline to fail with "Repo Path not set")
-- Forgetting to clear Blocked Reason on a reset (causes stale blocked reason to display)
 - Not checking Architecture & Decisions before scoping (causes architectural drift)
-- Setting orchestrator `src/` tasks to Ready instead of Pre-planning (the pre-planner handles promotion to Manual Queue for manual tasks)
-- Setting manual tasks to Parked instead of Manual Queue (Parked means "deliberately on hold", Manual Queue means "has a prompt, awaiting human pickup" ... see ADR-003)
-- Creating Management tasks in the pipeline (they fail on git commit)
-- Using `~/Developer/` instead of `/Users/michaeldavidson/Developer/` in Repo Path
-- Not querying the Active view for the next Sort Order (causes collisions)
 - Skipping Step 3.5 for Code tasks (executor writes both tests and code, defeating independence)
 - Approving a test spec that only covers happy paths (edge cases catch most bugs)
+- Using `~/Developer/` instead of `/Users/michaeldavidson/Developer/` in Repo Path
+- Producing prompts that require human substitution of any value
+- Creating Management tasks as issues (they fail on git commit)
 
 ## Project → Repo Path Mapping
 
