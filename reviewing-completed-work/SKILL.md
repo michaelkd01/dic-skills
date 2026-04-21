@@ -16,9 +16,10 @@ Role: Supervisor. Do not plan or execute ... only validate and instruct.
 
 ## Resources
 
-- **TASK SYSTEM**: Paperclip issues via API (`$PAPERCLIP_API_URL/api/companies/$PAPERCLIP_COMPANY_ID/issues`)
-- **PROJECT DOCS database** (Notion): `3083257a-fd0a-8088-bbcc-000bdd488971`
-- **Architecture & Decisions page** (Notion): `3163257a-fd0a-8171-894a-eb2b6a0d297d`
+- **Paperclip task tools**: `list_issues`, `update_issue`, `put_issue_document`, `comment_on_issue`
+- **Obsidian knowledge tools**: `search_notes`, `read_note`
+- **PROJECT DOCS database (Notion fallback)**: `3083257a-fd0a-8088-bbcc-000bdd488971`
+- **Architecture & Decisions page**: `3163257a-fd0a-8171-894a-eb2b6a0d297d`
 
 ---
 
@@ -28,8 +29,8 @@ Triggered when the Planner completes Step 3.5 (Generate Test Specification) for 
 
 ### A1. Load the Task
 
-1. Read the Paperclip issue by ID
-2. Extract from description: Acceptance Criteria, Project, Task Type, Skip Tests
+1. Query the issue in Paperclip via `list_issues` with `q` matching the issue title or ID
+2. Read: issue details, labels, attached documents (especially `spec` for acceptance criteria and task type)
 
 If Skip Tests = YES or Task Type ≠ Code, this mode does not apply. Return control to Planner.
 
@@ -100,16 +101,15 @@ Triggered after a Claude Code execution completes and the output is available fo
 
 ### B1. Load the Task
 
-1. Read the Paperclip issue by ID
-2. Extract from description metadata block and body:
-   - Acceptance Criteria (the definition of done)
-   - Branch Strategy
-   - Execution Method
+1. Query the issue in Paperclip via `list_issues` with `q` matching the issue title or ID
+2. Read issue details and attached documents, especially:
+   - Acceptance Criteria from `spec` document (the definition of done)
+   - Branch Strategy (from description)
    - Project
 
 ### B2. Load Project Context
 
-Before validating, fetch from Notion:
+Before validating, fetch:
 
 1. **Architecture & Decisions doc** for the project
 2. **Overview doc** for the project
@@ -200,27 +200,26 @@ Reason: {why the output is not salvageable}
 Next step: {re-scope from scratch / re-plan with different approach}
 ```
 
-### B6. Update the Issue
+### B6. Update Paperclip
 
 Based on verdict:
 
 **PASS:**
-1. Add a comment with the PASS verdict and evidence summary
-2. Set status to `done` (for scaffold/management tasks) or `in_review` (for code tasks needing human verification)
-3. Trigger deploy if applicable (deploy hook or note merge sequence)
+1. Update issue via `update_issue`: set `status` → `done`
+2. Attach verdict summary via `put_issue_document` with `key: "supervisor-review"`
+3. Trigger deploy if applicable (check project Architecture doc for deploy hook)
 
 **FIX-MINOR:**
-1. Add a comment with specific fix instructions
-2. Leave status as-is (will be re-run after fix)
+1. Leave `status` as-is (user will re-run after fix)
+2. Add fix instructions via `comment_on_issue`
 
 **FIX-MAJOR:**
-1. Add a comment with diagnostic analysis
-2. Set status back to `todo` for re-execution
-3. Assign back to Executor (or Pre-planner if AC needs revision)
+1. Update issue via `update_issue`: set `status` → `todo`
+2. Add diagnostic comment via `comment_on_issue`
 
 **REJECT:**
-1. Add a comment explaining why
-2. Set status to `backlog` (back to scoping)
+1. Update issue via `update_issue`: set `status` → `backlog`
+2. Add rejection reason via `comment_on_issue`
 
 ### B7. Deploy (PASS only)
 
@@ -228,7 +227,7 @@ Every PASS verdict must include deployment:
 
 - **Feature-branch:** provide merge sequence command
 - **Direct-main:** confirm push happened, trigger deploy hook if needed
-- **Deploy hook:** `POST https://api.vercel.com/v1/integrations/deploy/prj_VHyn5vDslqsoX6d1LMpa16y7X2bC/YpADhlKz4b`
+- **Deploy hook (if needed):** Check the project's Architecture doc (Obsidian first, Notion fallback) for the per-project deploy hook URL
 
 ## Validation Principles
 

@@ -96,7 +96,7 @@ Only reached if Gate 1 passes.
 
 **2b. Build Complexity**
 
-- Can this be built with the current stack and pipeline? (Next.js, Swift, Python, Orchestrator)
+- Can this be built with the current stack? (Next.js, Swift, Python)
 - Rough build effort estimate for MVP (days/weeks, not months)
 - Are there hard technical dependencies? (APIs, regulatory, third-party integrations, hardware)
 - Does it require capabilities outside the current toolset? (e.g., ML model training, real-time video, payments infrastructure)

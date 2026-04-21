@@ -38,7 +38,7 @@ Document what you found. If a prior decision exists that this question touches, 
 State clearly in one sentence what is being decided. Examples:
 - "Whether to use Vercel Password Protection, Vercel Authentication, or a Next.js middleware gate for dashboard auth"
 - "Whether to execute Delegator tasks via Claude Code CLI or Claude API"
-- "Whether the TEST QUEUE should be a new Notion database or a new status in the existing TASK QUEUE"
+- "Whether to store generated test specs inline in the Paperclip issue description or as a separate document via `put_issue_document`"
 
 ### Step 3 ... Research Options
 
@@ -101,7 +101,7 @@ Once the user confirms:
 
 2. **If it affects the roadmap:** Update the project's Roadmap doc
 
-3. **If it creates implementation work:** Create task(s) in the TASK QUEUE following the scoping-and-queuing-tasks skill
+3. **If it creates implementation work:** Create issue(s) in Paperclip following the scoping-and-queuing-tasks skill
 
 4. **Update the Chat Log** for the relevant project with a structured entry:
    ```

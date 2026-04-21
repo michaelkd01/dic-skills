@@ -1,21 +1,23 @@
 ---
 name: scoping-and-queuing-tasks
-description: Procedural checklist for scoping a task from first mention to Ready with a Claude Code prompt
+description: Procedural checklist for scoping a task from first mention to queued with a Claude Code prompt
 ---
 
 # Task Scoping Workflow
 
 ## Context
 
-This workflow is triggered whenever the user references a task to work on, whether by issue ID, name, or description. It covers the full path from "let's do X" to a task that is ready for execution with a validated prompt.
+This workflow is triggered whenever the user references a task to work on, whether by issue ID, name, or description. It covers the full path from "let's do X" to a task that is queued with a validated Claude Code prompt.
+
+All status transitions must comply with the ADR-003 valid_transitions map. Invalid transitions are rejected by the state machine in code.
 
 Role: Development Planner throughout. Switch to Supervisor only if validating a completed execution.
 
 ## Resources
 
-- **TASK SYSTEM**: Paperclip issues via API (`$PAPERCLIP_API_URL/api/companies/$PAPERCLIP_COMPANY_ID/issues`)
-- **PROJECT DOCS database** (Notion): `3083257a-fd0a-8088-bbcc-000bdd488971`
-- **Architecture & Decisions page** (Notion): `3163257a-fd0a-8171-894a-eb2b6a0d297d`
+- **Paperclip task tools**: `list_issues` (search/filter by `status`, `projectId`, `assigneeAgentId`), `create_issue`, `update_issue`, `put_issue_document` (attach specs, plans, prompts, logs)
+- **Obsidian knowledge tools**: `search_notes` (content or frontmatter), `read_note` (by path)
+- **Notion PROJECT DOCS**: fallback when Obsidian doesn't have the content
 
 ## Workflow
 
@@ -24,21 +26,21 @@ Role: Development Planner throughout. Switch to Supervisor only if validating a 
 Determine whether this is an existing task or a new one.
 
 **Existing task:**
-1. Search Paperclip issues by name or ID (GET `/api/companies/{companyId}/issues`)
-2. Read the full issue including description and comments
-3. Extract properties from the description metadata block (if present): Project, Task Type, Category, Priority, Branch Strategy, Max Iterations, Repo Path, Acceptance Criteria
+1. Search Paperclip via `list_issues` with a `q` query matching issue ID or title
+2. Read the issue details: title, status, priority, description, labels, project, company, parent, assignee
+3. Fetch any attached documents via issue document keys (e.g., `spec`, `prompt`, `execution-log`)
 
 **New task:**
 1. Confirm scope with the user before creating
-2. Determine the target project
+2. Determine the target project and company
 3. Skip to Step 4 (Create/Update Task)
 
 ### Step 2 ... Gather Project Context
 
 Before scoping or producing a prompt, ALWAYS fetch these project docs:
 
-1. **Architecture & Decisions** ... search PROJECT DOCS for `{ProjectCode} ... Architecture & Decisions`
-2. **Overview** ... search PROJECT DOCS for `{ProjectCode} ... Overview`
+1. **Architecture & Decisions** ... search Obsidian via `search_notes` for `{ProjectCode} Architecture & Decisions`; fall back to Notion PROJECT DOCS only if Obsidian returns nothing
+2. **Overview** ... search Obsidian via `search_notes` for `{ProjectCode} Overview`; fall back to Notion PROJECT DOCS only if Obsidian returns nothing
 3. **CLAUDE.md** ... if the task involves code, check project knowledge for the repo's CLAUDE.md
 
 Read enough to understand:
@@ -58,7 +60,7 @@ Review the existing AC (or draft new AC) against:
 - [ ] Criteria reference specific files or modules where possible
 - [ ] Criteria do not contradict Architecture & Decisions doc
 - [ ] Scope is achievable within Max Iterations (default 15, increase for complex tasks)
-- [ ] If this is a re-run of a failed task: read the execution log comments to understand what went wrong, and adjust AC or add recovery notes accordingly
+- [ ] If this is a re-run of a failed task: read the execution log document to understand what went wrong, and adjust AC or add recovery notes accordingly
 
 If AC needs changes, propose them to the user and get confirmation before proceeding.
 
@@ -94,10 +96,10 @@ If AC needs changes, propose them to the user and get confirmation before procee
    - Hand the test spec to the Supervisor role for validation
    - Supervisor checks the four criteria above
    - If all pass ... auto-approved, proceed to Step 4
-   - If any fail ... flag to user with specific deficiency
-   - Task cannot proceed until test spec is approved
+   - If any fail ... flag to user via Slack DM with specific deficiency
+   - Task cannot move to `todo` until test spec is approved
 
-5. Record the approved test spec in the issue description or as a comment. The execution prompt will reference it.
+5. Record the approved test spec by attaching it to the issue via `put_issue_document` with `key: "test-spec"`. The execution prompt will reference it.
 
 **Output format:**
 
@@ -118,48 +120,78 @@ Command: {from CLAUDE.md, e.g., pytest, npm run test}
 Coverage target: all new/modified code paths
 ```
 
-### Step 4 ... Create or Update the Paperclip Issue
+### Step 4 ... Create or Update the Task in Paperclip
 
-**Required fields for every issue:**
+**Required fields for `create_issue`:**
 
-| Field | Location | Rule |
-|---|---|---|
-| Title | Issue title | Descriptive, imperative form |
-| Status | Issue status | See decision rules below |
-| Project | Issue project | Must match a Paperclip project in this company |
-| Assignee | Issue assignee | Set to the appropriate agent |
-| Description | Issue body | Contains AC, metadata block, and execution prompt |
+| Field | Rule |
+|---|---|
+| `title` | Descriptive, imperative form |
+| `companyId` | Target company. Use DickBot for infrastructure/cross-cutting work. Use the specific company (AnytimeInterview, Bespoke, GymToGreen, ScreenTimeMath) when the task clearly belongs to one. When in doubt, prefer the most specific match. |
+| `projectId` | Target project within the company |
+| `status` | See decision rules below |
+| `priority` | `critical` / `high` / `medium` / `low` |
+| `description` | See description template below |
 
-**Description metadata block** (include at top of every issue description):
+**Optional fields:**
+
+| Field | Rule |
+|---|---|
+| `labelIds` | Labels for categorisation (e.g., `manual`, `scaffold`, `bug`, `feature`, `chore`) |
+| `assigneeAgentId` | Agent assigned to execute |
+| `parentId` | Parent issue ID (for sub-tasks) |
+
+**Description template:**
+
+The issue `description` should contain structured metadata and context:
 
 ```
-<!-- metadata -->
-task_type: Code | Scaffold | Management | Research
-category: Bug | Chore | Feature
-priority: 0-Extreme | 1-High | 2-Mid | 3-Low
-branch_strategy: feature-branch | direct-main
-max_iterations: 15
-repo_path: /Users/michaeldavidson/Developer/{repo}
-execution_method: Pipeline | Manual
-<!-- /metadata -->
+## Task Details
+- **Task Type:** Code / Management / Research / Scaffold
+- **Category:** Bug / Chore / Feature
+- **Branch Strategy:** feature-branch / direct-main
+- **Repo Path:** /Users/michaeldavidson/Developer/{repo}
+- **Max Iterations:** {default 15, increase for complex tasks}
+- **Human Hours Est:** {see estimation guide below}
 
 ## Acceptance Criteria
-
-{validated AC from Step 3}
+{Validated in Step 3}
 ```
 
-**Status decision rules (Paperclip statuses):**
+Attach the full spec (if lengthy) via `put_issue_document` with `key: "spec"`.
 
-- Pipeline task: **todo** assigned to Executor ... the execution prompt is in the description, Executor picks it up on next heartbeat
-- Needs Pre-planner scoping: **todo** assigned to Pre-planner
-- Manual task: **todo** assigned to no one, labelled "manual" ... you grab the prompt and run it manually
-- Needs more scoping: **backlog** (not yet ready for any agent)
+**Status decision rules:**
+
+- New task, fully scoped with prompt: **`todo`**
+- New task, not yet fully scoped: **`backlog`**
+- Task requiring manual user execution: **`backlog`** with a `manual` label (user pulls when ready)
 - Management task (no code changes): do NOT create an issue ... handle directly in chat
+- Move to **`in_progress`** when started
+- Move to **`in_review`** when awaiting test/validation
+- Move to **`done`** on pass
 
-**For re-running a failed task:**
-- Set status back to todo
-- Clear the execution log (or add a comment noting the reset)
-- Assign to Executor
+**Human Hours Estimation Guide:**
+
+Estimate how long this task would take a competent human developer working manually (no AI). This is the baseline for leverage ratio reporting.
+
+| Estimate | When to use |
+|---|---|
+| 0.25 | Single-file change, config tweak, scaffold, property backfill |
+| 0.5 | Small feature or fix touching 1-3 files with tests |
+| 1.0 | Multi-file feature, new API route, moderate refactor |
+| 2.0 | Cross-cutting change, new subsystem, significant architecture work |
+| 3.0+ | Large feature spanning multiple modules, new project phase |
+
+When in doubt, round up. An overestimate is better than a missing estimate.
+
+**Validation gate (before proceeding to Step 5):**
+
+Verify every required field is set. Specifically check:
+- [ ] Human Hours Est is included in the description and > 0
+- [ ] Repo Path is an absolute path (starts with `/Users/`)
+- [ ] Branch Strategy is specified in the description
+
+Do not produce a Claude Code prompt until all three are confirmed.
 
 ### Step 5 ... Produce the Claude Code Prompt
 
@@ -173,9 +205,9 @@ Follow the **writing-execution-prompts** skill exactly. Key reminders:
 6. Concurrency classification stated
 7. **Test Contract section present** (for Code tasks with approved test spec)
 
-Deliver the prompt as a linked Markdown artifact.
+Attach the prompt to the Paperclip issue via `put_issue_document` with `key: "prompt"`.
 
-Include the execution prompt in the Paperclip issue description (after the metadata block and AC).
+Deliver the prompt as a linked Markdown artifact.
 
 ### Step 6 ... Provide the Execution Command
 
@@ -197,16 +229,18 @@ Every completed fix must include deployment:
 
 - **Feature-branch:** merge sequence → push to main → Vercel auto-deploys (or trigger deploy hook)
 - **Direct-main:** `git push origin main` → Vercel auto-deploys
-- **Deploy hook (if needed):** `POST https://api.vercel.com/v1/integrations/deploy/prj_VHyn5vDslqsoX6d1LMpa16y7X2bC/YpADhlKz4b`
+- **Deploy hook (if needed):** Check the project's Architecture doc (Obsidian first, Notion fallback) for the per-project deploy hook URL
 
 ## Common Mistakes to Avoid
 
+- Forgetting to include Human Hours Est in the description (breaks leverage ratio reporting, frequently missed)
+- Forgetting to include Repo Path in the description (causes confusion about target repo)
 - Not checking Architecture & Decisions before scoping (causes architectural drift)
+- Creating Management tasks as issues (they fail on git commit)
+- Using `~/Developer/` instead of `/Users/michaeldavidson/Developer/` in Repo Path
 - Skipping Step 3.5 for Code tasks (executor writes both tests and code, defeating independence)
 - Approving a test spec that only covers happy paths (edge cases catch most bugs)
-- Using `~/Developer/` instead of `/Users/michaeldavidson/Developer/` in Repo Path
 - Producing prompts that require human substitution of any value
-- Creating Management tasks as issues (they fail on git commit)
 
 ## Project → Repo Path Mapping
 
@@ -221,7 +255,6 @@ Every completed fix must include deployment:
 | CaddieAI | /Users/michaeldavidson/Developer/CaddieAI |
 | ContextEngine | /Users/michaeldavidson/Developer/context-engine |
 | Delegator | /Users/michaeldavidson/Developer/delegator |
-| Orchestrator | /Users/michaeldavidson/Developer/orchestrator |
 | Propell | /Users/michaeldavidson/Developer/Propell SF |
 | RightPeople | /Users/michaeldavidson/Developer/right-people |
 | ScreenTimeMath | /Users/michaeldavidson/Developer/ScreenTimeMath |

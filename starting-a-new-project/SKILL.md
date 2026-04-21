@@ -1,27 +1,28 @@
 ---
 name: starting-a-new-project
-description: Step-by-step procedure for bootstrapping a new project from naming to first pipeline-ready task
+description: Step-by-step procedure for bootstrapping a new project from naming to first queued task
 ---
 
 # New Project Kickoff Runbook
 
 ## Context
 
-This runbook is triggered when the user wants to start a new project. It covers everything from naming to having a scaffold task ready for the pipeline. The goal is zero missed steps ... every project gets the same infrastructure.
+This runbook is triggered when the user wants to start a new project. It covers everything from naming to having a scaffold issue ready in Paperclip. The goal is zero missed steps ... every project gets the same infrastructure.
 
-Role: Development Planner throughout. Execution (Notion setup) happens directly via tools in chat.
+Role: Development Planner throughout. Execution (Paperclip and Notion setup) happens directly via tools in chat.
 
 ## Inputs Required
 
 Before starting, confirm with the user:
 
-1. **Project name** (display name in Notion, e.g., "SOABridge")
+1. **Project name** (display name, e.g., "SOABridge")
 2. **Project code** (short prefix for doc naming, e.g., "SOA")
 3. **Repo folder name** (what the directory will be called in `~/Developer/`, e.g., "soabridge")
 4. **Tech stack** (Python, TypeScript/Next.js, Swift, etc.)
 5. **Brief purpose** (one sentence ... what does this project do?)
+6. **Target company** (DickBot for infrastructure/cross-cutting, or specific: AnytimeInterview, Bespoke, GymToGreen, ScreenTimeMath)
 
-Use `ask_user_input` to collect bounded choices (tech stack, execution method preferences). Use open-ended questions for name and purpose.
+Use `ask_user_input` to collect bounded choices (tech stack, company). Use open-ended questions for name and purpose.
 
 ## Workflow
 
@@ -31,42 +32,28 @@ Use `ask_user_input` to collect bounded choices (tech stack, execution method pr
    - Lowercase (npm/GitHub compatibility)
    - No spaces (causes path issues in scripts)
    - Matches what `git@github.com:michaelkd01/{name}.git` will be
-2. Confirm the project code is unique (not already used in PROJECT DOCS)
+2. Confirm the project code is unique (search Obsidian and Notion PROJECT DOCS for existing uses)
 3. Construct the full repo path: `/Users/michaeldavidson/Developer/{folder-name}`
 
-### Phase 2 ... Notion Setup
-
-Execute all of these directly via Notion MCP tools. Do NOT create tasks for this ... it's management work.
+### Phase 2 ... Platform Setup
 
 **2a. Create Project in Paperclip**
 
-Create a new project in the Paperclip company via the API:
+Create the project in the correct Paperclip company via `create_project`:
+- Choose the target company (DickBot for infrastructure/cross-cutting, or the specific company if the project clearly belongs to one)
+- Query `list_projects` for the target company first to avoid creating duplicates
+- Set the project name to match the display name
 
-```
-POST $PAPERCLIP_API_URL/api/companies/$PAPERCLIP_COMPANY_ID/projects
-{
-  "name": "{ProjectName}",
-  "repoUrl": "https://github.com/michaelkd01/{folder-name}",
-  "executionWorkspacePolicy": {
-    "enabled": true,
-    "defaultMode": "shared_workspace",
-    "strategy": "project_primary"
-  }
-}
-```
-
-If operating in Claude.ai chat, use the Paperclip MCP create_project tool. If operating as a Paperclip agent, use curl with the API.
-
-**2b. Add Project to PROJECT DOCS select options**
+**2b. Add Project to PROJECT DOCS select options (Notion)**
 
 Use `notion-update-data-source` on `3083257a-fd0a-8088-bbcc-000bdd488971`:
 ```
 ALTER COLUMN "Project" SET SELECT({all existing options}, '{NewProject}':color)
 ```
 
-Same critical rule applies ... restate all existing options.
+**CRITICAL:** You must restate ALL existing project options when adding a new one. Omitted options are silently deleted. Query the current options first.
 
-**2c. Create standard project docs**
+**2c. Create standard project docs (Notion)**
 
 Use `notion-create-pages` with parent `{'data_source_id': '3083257a-fd0a-8088-bbcc-000bdd488971'}`.
 
@@ -81,30 +68,28 @@ Create all of these in a single batch call:
 
 Set `Project` and `Status: Active` on all docs.
 
-### Phase 3 ... Scaffold Task
+### Phase 3 ... Scaffold Issue
 
-Create a scaffold issue in Paperclip:
+Create a scaffold issue in Paperclip via `create_issue`:
 
-Title: Scaffold {ProjectName} repo
-Status: todo
-Assignee: Executor agent
-Project: {ProjectName} (created in Step 2a)
-
-Description:
 ```
-<!-- metadata -->
-task_type: Scaffold
-category: Chore
-priority: 1-High
-branch_strategy: direct-main
-max_iterations: 5
-repo_path: /Users/michaeldavidson/Developer/{folder-name}
-execution_method: Pipeline
-<!-- /metadata -->
+title: Scaffold {ProjectName} repo
+companyId: {target company ID}
+projectId: {project ID from Phase 2a}
+status: todo
+priority: medium
+labelIds: [scaffold]
+description: |
+  ## Task Details
+  - **Task Type:** Scaffold
+  - **Category:** Chore
+  - **Branch Strategy:** direct-main
+  - **Repo Path:** /Users/michaeldavidson/Developer/{folder-name}
+  - **Max Iterations:** 5
+  - **Human Hours Est:** 0.25
 
-## Acceptance Criteria
-
-{stack-specific AC ... see below}
+  ## Acceptance Criteria
+  {stack-specific, see below}
 ```
 
 **Python scaffold AC:**
@@ -148,30 +133,20 @@ execution_method: Pipeline
 3. git init, initial commit, push to michaelkd01/{folder-name}
 ```
 
-### Phase 4 ... Clone Map Update
-
-The Mac Mini's nightly security audit and heartbeat agent auto-clone repos using a CLONE_MAP in `deploy/macos/wrapper-security-audit.sh`. The new repo needs to be added.
-
-Create a task (or note for the next manual session):
-- Add `{folder-name}` to the CLONE_MAP in `wrapper-security-audit.sh`
-- If the folder name differs from the GitHub repo name, add the mapping explicitly
-- If the repo has a non-main default branch, add to the BRANCH_MAP
-
-### Phase 5 ... Confirm & Summarize
+### Phase 4 ... Confirm & Summarize
 
 Post a summary to the user:
 
 ```
 Project {ProjectName} ({Code}) initialized:
+- Paperclip: Project created in {CompanyName}
 - Notion: PROJECT DOCS created (Overview, Architecture, Roadmap, Chat Log)
-- Paperclip: Project created with workspace policy
-- Scaffold issue: created, assigned to Executor, Status: todo
+- Scaffold issue: {issue ID}, status: todo
 - Repo path: /Users/michaeldavidson/Developer/{folder-name}
-- Next: Executor picks up scaffold on next heartbeat, then Clone Map update for Mac Mini
+- Next: the scaffold issue moves to in_progress when you or an agent picks it up. No auto-pipeline ... manual pickup only.
 ```
 
-## Post-Scaffold Checklist (after pipeline runs the scaffold)
+## Post-Scaffold Checklist (after the scaffold issue is executed)
 
 - [ ] Verify repo exists on GitHub at `michaelkd01/{folder-name}`
-- [ ] Verify Mac Mini can clone it (heartbeat will attempt auto-clone)
 - [ ] First real task can be created

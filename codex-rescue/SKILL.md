@@ -33,7 +33,6 @@ Use `/codex:rescue` when Claude Code is **stuck** ... not as a default or first-
 
 **Do NOT use rescue for:**
 - Tasks Claude Code hasn't attempted yet (just run them normally)
-- Tasks that need Orchestrator pipeline execution (rescue is manual-session only)
 - Broad refactors or multi-file rewrites (rescue works best on focused problems)
 
 ## Commands Reference

@@ -71,7 +71,7 @@ pytest                   # Python projects
 ruff check src/ tests/   # Python lint
 ```
 
-For projects with both (e.g., Orchestrator): verify both stacks.
+For projects with multiple language stacks, verify each stack's build/test/lint.
 
 ### 6. Commit and Push Step (MANDATORY)
 
@@ -117,7 +117,7 @@ Every prompt delivered in a multi-prompt response MUST be labeled with one of:
 
 - **PARALLEL SAFE** ... no shared files with other prompts in the batch. Can run simultaneously.
 - **SEQUENTIAL** ... depends on another prompt completing first. State the order: "Run after Prompt A."
-- **EXCLUSIVE** ... must be the only thing running. Typically: direct-main pushes, orchestrator self-modifications, database migrations.
+- **EXCLUSIVE** ... must be the only thing running. Typically: direct-main pushes, database migrations.
 - **BLOCKED** ... cannot execute yet. State the blocker.
 
 If delivering a single prompt, label it EXCLUSIVE unless there's a reason not to.
@@ -134,11 +134,6 @@ If delivering a single prompt, label it EXCLUSIVE unless there's a reason not to
 ### Management Tasks (Notion-only, no code changes)
 - Do NOT send through the pipeline ... they fail on the git commit step
 - Handle directly in chat via Notion MCP tools
-
-### Orchestrator Self-Modification Tasks
-- Status: Manual Queue (never Ready ... prevents pipeline from running them)
-- Execution Method: Manual
-- Must be run via `cd ~/Developer/orchestrator && claude`
 
 ## Merge Sequence (Post-Execution)
 
@@ -166,7 +161,7 @@ Before delivering any prompt, verify ALL of the following:
 - [ ] Concurrency classification is stated
 - [ ] No instructions say "see above" or reference context outside the prompt
 - [ ] Repo path matches the project (check memory for the correct mapping)
-- [ ] If Orchestrator src/ task: status is Manual Queue, not Ready
+
 - [ ] **Test Contract section is present** (for Code tasks without Skip Tests)
 
 ## Delivery Format
