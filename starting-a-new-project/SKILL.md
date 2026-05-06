@@ -1,95 +1,106 @@
 ---
 name: starting-a-new-project
-description: Step-by-step procedure for bootstrapping a new project from naming to first queued task
+description: Step-by-step procedure for bootstrapping a new project from naming to first Linear issue ready for Cyrus
 ---
 
 # New Project Kickoff Runbook
 
 ## Context
 
-This runbook is triggered when the user wants to start a new project. It covers everything from naming to having a scaffold issue ready in Paperclip. The goal is zero missed steps ... every project gets the same infrastructure.
+This runbook is triggered when the user wants to start a new project. It covers everything from naming to having a scaffold issue ready in Linear and wired to Cyrus. The goal is zero missed steps ... every project gets the same infrastructure.
 
-Role: Development Planner throughout. Execution (Paperclip and Notion setup) happens directly via tools in chat.
+Active execution layer: Cyrus driven by Linear. Knowledge layer: Obsidian + Notion PROJECT DOCS.
+
+Role: Development Planner throughout.
 
 ## Inputs Required
 
 Before starting, confirm with the user:
 
-1. **Project name** (display name, e.g., "SOABridge")
-2. **Project code** (short prefix for doc naming, e.g., "SOA")
-3. **Repo folder name** (what the directory will be called in `~/Developer/`, e.g., "soabridge")
+1. **Project name** (e.g., "SOABridge")
+2. **Project code** (short prefix, e.g., `SOA`)
+3. **Repo folder name** (directory in `~/Developer/`, e.g., `soabridge`)
 4. **Tech stack** (Python, TypeScript/Next.js, Swift, etc.)
-5. **Brief purpose** (one sentence ... what does this project do?)
-6. **Target company** (DickBot for infrastructure/cross-cutting, or specific: AnytimeInterview, Bespoke, GymToGreen, ScreenTimeMath)
+5. **Brief purpose** (one sentence)
+6. **Linear placement decision**: own team, or scope label inside an existing team? Generally each *business* gets its own Linear workspace; sub-projects within a business can share a team with scope labels.
 
-Use `ask_user_input` to collect bounded choices (tech stack, company). Use open-ended questions for name and purpose.
+Use `ask_user_input_v0` to collect bounded choices (tech stack, Linear placement). Use open-ended questions for name and purpose.
 
 ## Workflow
 
 ### Phase 1 ... Naming & Validation
 
 1. Confirm the repo folder name follows conventions:
-   - Lowercase (npm/GitHub compatibility)
-   - No spaces (causes path issues in scripts)
-   - Matches what `git@github.com:michaelkd01/{name}.git` will be
-2. Confirm the project code is unique (search Obsidian and Notion PROJECT DOCS for existing uses)
+   - Lowercase
+   - No spaces
+   - Matches `git@github.com:michaelkd01/{name}.git`
+2. Confirm the project name is unique across the portfolio (check `_shared/repo-paths.md` and Notion PROJECT DOCS Project select)
 3. Construct the full repo path: `/Users/michaeldavidson/Developer/{folder-name}`
 
-### Phase 2 ... Platform Setup
+### Phase 2 ... Linear Setup
 
-**2a. Create Project in Paperclip**
+**If creating a new Linear team:**
 
-Create the project in the correct Paperclip company via `create_project`:
-- Choose the target company (DickBot for infrastructure/cross-cutting, or the specific company if the project clearly belongs to one)
-- Query `list_projects` for the target company first to avoid creating duplicates
-- Set the project name to match the display name
+1. In Linear UI: Create Team with the desired prefix
+2. Mirror the canonical workflow states from AnytimeInterview: `Backlog`, `Todo`, `In Progress`, `Investigation Complete`, `In Review`, `Done`, `Canceled`, `Duplicate`
+3. Add canonical labels: `Investigate`, `CI Failed`, `Feature`, `Improvement`, `Bug`
+4. Add scope labels per the workspace's scope structure
 
-**2b. Add Project to PROJECT DOCS select options (Notion)**
+**If using an existing team with a scope label:**
 
-Use `notion-update-data-source` on `3083257a-fd0a-8088-bbcc-000bdd488971`:
-```
-ALTER COLUMN "Project" SET SELECT({all existing options}, '{NewProject}':color)
-```
+1. Add a scope label for the new project if it doesn't exist (via Linear UI or `Linear` MCP if available in this chat)
+2. Document the scope label in `_shared/repo-paths.md`
 
-**CRITICAL:** You must restate ALL existing project options when adding a new one. Omitted options are silently deleted. Query the current options first.
+### Phase 3 ... Knowledge Layer Setup
 
-**2c. Create standard project docs (Notion)**
+**Obsidian:**
 
-Use `notion-create-pages` with parent `{'data_source_id': '3083257a-fd0a-8088-bbcc-000bdd488971'}`.
+1. Create `wiki/projects/{slug}.md` with the standard project frontmatter and headings (Purpose, Stack, Status, Connections)
+2. Create `wiki/projects/{slug}/architecture/` directory for ADRs as the project develops
 
-Create all of these in a single batch call:
+**Notion PROJECT DOCS** (fallback / external collaboration):
+
+1. Add the project to the PROJECT DOCS database `Project` select if it doesn't exist. **CRITICAL:** restate ALL existing options when adding a new one. Omitted options are silently deleted.
+2. Create the standard four docs in a single `Notion:notion-create-pages` batch with parent `{'data_source_id': '3083257a-fd0a-8088-bbcc-000bdd488971'}`:
 
 | Doc Name | Doc Type | Initial Content |
 |---|---|---|
 | `{Code} ... Overview` | Overview | Purpose, tech stack, status, key constraints |
-| `{Code} ... Architecture & Decisions` | Architecture | Architecture section (even if minimal), empty Decisions section with ADR template |
+| `{Code} ... Architecture & Decisions` | Architecture | Architecture section + empty Decisions section with ADR template |
 | `{Code} ... Roadmap` | Roadmap | Phased plan or "To be defined" |
 | `{Code} ... Chat Log` | Chat Log | Header and empty first entry template |
 
 Set `Project` and `Status: Active` on all docs.
 
-### Phase 3 ... Scaffold Issue
+### Phase 4 ... Cyrus Configuration
 
-Create a scaffold issue in Paperclip via `create_issue`:
+Add the new repo to `~/.cyrus/config.json` on the Mac Mini under the appropriate workspace block:
+- `repository`: `michaelkd01/{folder-name}`
+- `baseBranch`: typically `staging` or `main` per repo convention
+- Any scope-label routing if applicable
+
+`pm2 restart cyrus` to apply.
+
+### Phase 5 ... Update _shared/repo-paths.md
+
+Add the new project to the canonical Project ↔ Repo Path table.
+
+### Phase 6 ... Scaffold Issue
+
+Create a scaffold issue in Linear via `Linear:save_issue`:
 
 ```
 title: Scaffold {ProjectName} repo
-companyId: {target company ID}
-projectId: {project ID from Phase 2a}
-status: todo
-priority: medium
-labelIds: [scaffold]
-description: |
-  ## Task Details
-  - **Task Type:** Scaffold
-  - **Category:** Chore
-  - **Branch Strategy:** direct-main
-  - **Repo Path:** /Users/michaeldavidson/Developer/{folder-name}
-  - **Max Iterations:** 5
-  - **Human Hours Est:** 0.25
+team: {team key}
+state: Todo
+labels: [scaffold, {scope label if applicable}]
+priority: 2 (High)
+description:
+  ## Context
+  Bootstrapping the {ProjectName} repo for first commits.
 
   ## Acceptance Criteria
-  {stack-specific, see below}
+  {stack-specific AC, see below}
 ```
 
 **Python scaffold AC:**
@@ -133,20 +144,23 @@ description: |
 3. git init, initial commit, push to michaelkd01/{folder-name}
 ```
 
-### Phase 4 ... Confirm & Summarize
+### Phase 7 ... Confirm & Summarize
 
-Post a summary to the user:
+Post a summary:
 
 ```
 Project {ProjectName} ({Code}) initialized:
-- Paperclip: Project created in {CompanyName}
-- Notion: PROJECT DOCS created (Overview, Architecture, Roadmap, Chat Log)
-- Scaffold issue: {issue ID}, status: todo
-- Repo path: /Users/michaeldavidson/Developer/{folder-name}
-- Next: the scaffold issue moves to in_progress when you or an agent picks it up. No auto-pipeline ... manual pickup only.
+- Linear: {team / scope label} configured
+- Knowledge: Obsidian project page + Notion PROJECT DOCS (Overview, Architecture, Roadmap, Chat Log)
+- Cyrus: workspace block added, restart applied
+- Repo path: /Users/michaeldavidson/Developer/{folder-name} (added to _shared/repo-paths.md)
+- Scaffold issue: {identifier}, state: Todo
+- Next: Cyrus picks up scaffold and opens initial PR
 ```
 
-## Post-Scaffold Checklist (after the scaffold issue is executed)
+## Post-Scaffold Checklist
 
 - [ ] Verify repo exists on GitHub at `michaelkd01/{folder-name}`
+- [ ] Verify Cyrus opened the initial PR
+- [ ] Supervisor verdict on the scaffold PR (see `reviewing-completed-work`)
 - [ ] First real task can be created

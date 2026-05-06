@@ -7,9 +7,7 @@ description: Standard format, rules, and validation checklist for producing Clau
 
 ## Context
 
-Every Claude Code execution prompt must follow this standard. This skill is the single source of truth for prompt structure, required elements, and validation. It applies to all prompts ... pipeline tasks, manual tasks, scaffolds, fixes, and ad hoc executions.
-
-All status transitions referenced in prompts must comply with ADR-003 valid_transitions map.
+Every Claude Code execution prompt must follow this standard. This skill is the single source of truth for prompt structure, required elements, and validation. It applies to all prompts ... Cyrus-attached prompts (sub-documents on Linear issues), manual one-off prompts, scaffolds, fixes, and ad hoc executions.
 
 ## Prompt Structure
 
@@ -18,10 +16,10 @@ Every prompt must contain these sections in order:
 ### 1. Title Block
 
 ```
-# {Issue ID}: {Task Name}
+# {Issue identifier}: {Task Name}
 ```
 
-If no issue ID exists (ad hoc execution), use a descriptive title.
+For Cyrus-attached prompts, the issue identifier is the Linear identifier (e.g., `ANY-42`, `BES-7`). For manual ad hoc prompts without an issue, use a descriptive title.
 
 ### 2. Context (optional but recommended)
 
@@ -29,7 +27,7 @@ One to three sentences explaining WHY this task exists. Reference the project, t
 
 ### 3. Test Contract (MANDATORY for Code tasks)
 
-**Skip only for:** Scaffold tasks, Management tasks, or tasks with Skip Tests = YES.
+**Skip only for:** scaffold work or management/non-code work.
 
 This section references the pre-approved test specification from the scoping phase. It tells the executor exactly what tests to write FIRST, before any implementation code.
 
@@ -60,7 +58,7 @@ Numbered steps. Each step must be:
 - **Specific** ... name exact files, exact functions, exact line-level locations where possible
 - **Self-contained** ... do not reference external docs, URLs, or "see above"
 - **Unambiguous** ... if there are two valid interpretations, add a constraint to eliminate one
-- **Copy-paste ready** ... all paths are absolute or repo-relative. No placeholders like `{your-path}` or `<repo-root>`. Every command is fully formed.
+- **Copy-paste ready** ... all paths are absolute or repo-relative. No placeholders. Every command is fully formed.
 
 ### 5. Verification Step
 
@@ -71,26 +69,33 @@ pytest                   # Python projects
 ruff check src/ tests/   # Python lint
 ```
 
-For projects with multiple language stacks, verify each stack's build/test/lint.
+For projects with multiple toolchains, verify each.
 
-### 6. Commit and Push Step (MANDATORY)
+### 6. Commit, Merge, and Push Step (MANDATORY)
 
-This must be the FINAL numbered step. It must be a separate, explicitly numbered step ... never folded into a previous step. Never trust Claude Code to commit on its own.
+This must be the FINAL numbered step. Never folded into a previous step. Never trust Claude Code to commit on its own.
 
-**For feature-branch tasks:**
+**For feature-branch tasks (manual session, includes merge to base branch):**
 ```
 git config user.email "michaelkd01@gmail.com" && git config user.name "Michael Davidson"
 git checkout -b {branch-name}
-git add -A && git commit -m "{Issue ID}: {descriptive message}" && git push origin {branch-name}
+git add -A && git commit -m "{issue-identifier}: {descriptive message}" && git push origin {branch-name}
+git checkout {base-branch} && git merge --ff-only {branch-name} && git push origin {base-branch} && git branch -D {branch-name}
 ```
 
-**For direct-main tasks:**
+The merge-to-base step is part of the prompt itself. **Never provide a separate post-merge command in chat.** The prompt is self-contained. If the ff-only merge fails, the work is safe on the feature branch for manual resolution.
+
+**For Cyrus-driven work:** Cyrus opens a PR rather than merging directly. The merge-to-base step is omitted; the Supervisor (or `hourly-supervisor-review`) merges the PR after validation.
+
+**For direct-to-base tasks:**
 ```
 git config user.email "michaelkd01@gmail.com" && git config user.name "Michael Davidson"
-git add -A && git commit -m "{Issue ID}: {descriptive message}" && git push origin main
+git add -A && git commit -m "{issue-identifier}: {descriptive message}" && git push origin {base-branch}
 ```
 
-The git identity lines are NOT optional. macOS defaults to hostname email which Vercel blocks.
+The git identity lines are NOT optional. macOS defaults to a hostname email which Vercel blocks.
+
+**Default branch names:** Verify per-repo. Modern repos use `main`. AnytimeInterview's Cyrus base is `staging`. Always confirm with `git symbolic-ref refs/remotes/origin/HEAD` if unsure.
 
 ### 7. Rules Block (MANDATORY)
 
@@ -103,81 +108,78 @@ Every prompt must end with:
 - Report the output of every command.
 ```
 
-Add task-specific rules as needed (e.g., "Do not modify files outside dashboard/", "If tests fail, stop and report").
+Add task-specific rules as needed.
 
 ## Branch Naming Convention
 
-- Pipeline tasks: `issue-{id}-{kebab-case-description}`
-- Manual tasks: `issue-{id}-{kebab-case-description}` or `fix/{kebab-case-description}`
-- Security tasks: `sec-{number}-{kebab-case-description}`
+**Cyrus-driven work:** Cyrus generates branch names automatically per its config. Don't override unless required.
+
+**Manual prompts:**
+- Issue-attached: `{issue-identifier}-{kebab-case-description}` (e.g., `ANY-42-fix-stripe-webhook-replay`)
+- Ad hoc: `fix/{kebab-case-description}` or `chore/{kebab-case-description}`
 
 ## Concurrency Classification
 
 Every prompt delivered in a multi-prompt response MUST be labeled with one of:
 
-- **PARALLEL SAFE** ... no shared files with other prompts in the batch. Can run simultaneously.
-- **SEQUENTIAL** ... depends on another prompt completing first. State the order: "Run after Prompt A."
-- **EXCLUSIVE** ... must be the only thing running. Typically: direct-main pushes, database migrations.
+- **PARALLEL SAFE** ... no shared files with other prompts in the batch.
+- **SEQUENTIAL** ... depends on another prompt completing first. State the order.
+- **EXCLUSIVE** ... must be the only thing running. Typically: direct-to-base pushes, database migrations, repo-wide refactors.
 - **BLOCKED** ... cannot execute yet. State the blocker.
 
 If delivering a single prompt, label it EXCLUSIVE unless there's a reason not to.
 
 ## Task-Type-Specific Rules
 
-### Scaffold Tasks
-- Branch Strategy: `direct-main`
-- Skip CLAUDE.md check, plan phase, eval phase
+### Scaffold Prompts
+- Direct-to-base (no feature branch)
 - Skip Test Contract section
 - Executor uses `~/Developer` as `cwd` (not repo root ... repo doesn't exist yet)
-- On success: status goes to Done (not Awaiting Test)
 
-### Management Tasks (Notion-only, no code changes)
-- Do NOT send through the pipeline ... they fail on the git commit step
-- Handle directly in chat via Notion MCP tools
-
-## Merge Sequence (Post-Execution)
-
-After a feature-branch prompt completes, the merge command is:
-
-```
-git fetch origin && git checkout -b {branch-name} origin/{branch-name} && git checkout main && git merge --ff-only {branch-name} && git push origin main && git branch -D {branch-name}
-```
-
-Claude Code pushes to `origin` but leaves no local tracking branch. This sequence handles that.
+### Management Prompts (no code changes)
+- Don't deliver as Claude Code prompts. Handle directly in chat via Linear / Notion / Obsidian MCP tools.
+- The prompt format below assumes work that produces commits. Pure-doc work doesn't fit.
 
 ## Validation Checklist
 
 Before delivering any prompt, verify ALL of the following:
 
-- [ ] Title includes issue identifier (if applicable)
-- [ ] All file paths are fully qualified (no placeholders, no `~` in non-shell contexts)
+- [ ] Title includes the issue identifier (if applicable)
+- [ ] All file paths are fully qualified
 - [ ] Git identity block is present before commit step
-- [ ] Commit and push is the FINAL numbered step, explicitly separated
-- [ ] Branch name matches the branch strategy (feature-branch vs direct-main)
-- [ ] Commit message includes issue identifier
+- [ ] Commit, merge, and push is the FINAL numbered step
+- [ ] Feature-branch prompts include the merge-to-base step (or omit if Cyrus-driven)
+- [ ] Base branch name is correct for the repo
+- [ ] Branch name matches the branch strategy
+- [ ] Commit message includes the issue identifier
 - [ ] Verification step exists (build, test, lint as appropriate)
 - [ ] Rules block is present
 - [ ] Rules block includes "Do not remove existing functionality unless explicitly instructed"
 - [ ] Concurrency classification is stated
 - [ ] No instructions say "see above" or reference context outside the prompt
-- [ ] Repo path matches the project (check memory for the correct mapping)
-
-- [ ] **Test Contract section is present** (for Code tasks without Skip Tests)
+- [ ] Repo path matches the project (cross-check `_shared/repo-paths.md`)
+- [ ] Test Contract section is present (for Code tasks)
+- [ ] Any model reference points to the latest available Claude Opus. Current as of writing: `claude-opus-4-7`. Update to whatever is highest when new versions release.
 
 ## Delivery Format
 
-Each prompt is delivered as a **separate linked Markdown artifact** (file in `/mnt/user-data/outputs/`). Planning context and concurrency summary stay in the chat body, not in the prompt file.
+For Cyrus-attached prompts: store as a Linear sub-document via `Linear:save_document` with the issue as parent. Name the doc `Execution Prompt`.
 
-File naming: `{issue-id}-{kebab-case-description}.md` (e.g., `issue-42-hardcode-inception-date.md`)
+For manual prompts: deliver as a separate linked Markdown artifact in chat. Planning context and concurrency summary stay in the chat body, not in the prompt file.
+
+File naming for ad hoc prompts: `{issue-identifier}-{kebab-case-description}.md` or `manual-{kebab-case-description}.md`.
 
 ## Anti-Patterns (Never Do These)
 
 - Never fold the commit step into another step ("implement X and then commit")
+- Never provide a separate post-merge command in chat ... the merge is in the prompt (or omitted for Cyrus)
+- Never use template placeholders like `{branch}` in the chat body ... only in the prompt file
 - Never use `git add .` inside a subdirectory ... always `git add -A` from repo root
 - Never assume Claude Code will push without being told
 - Never give raw terminal commands for the user to run ... always wrap in a Claude Code prompt
-- Never use `claude-opus-4-5-20250529` ... the current model is `claude-opus-4-6`
+- Never pin to an old Claude model. Use the latest Claude Opus available; current is `claude-opus-4-7`. Update when new versions release.
 - Never omit the git identity block ("it was set globally" is not reliable across machines)
 - Never produce a prompt that requires human substitution of any value
 - Never skip the Test Contract for Code tasks (defeats the test-first quality gate)
 - Never let the executor modify test assertions to make them pass (tests are the contract, not the implementation)
+- Never assume default branch is `main` ... verify per-repo (some use `staging`, `master`, etc.)
