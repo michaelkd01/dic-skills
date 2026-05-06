@@ -1,6 +1,6 @@
 ---
 name: reviewing-completed-work
-description: Procedural checklist for validating task execution outputs and issuing PASS/FIX/REJECT verdicts
+description: Procedural checklist for validating Linear issue work and issuing PASS/FIX/REJECT verdicts
 ---
 
 # Supervisor Validation
@@ -10,16 +10,17 @@ description: Procedural checklist for validating task execution outputs and issu
 This skill is triggered in two modes:
 
 1. **Test Spec Validation** ... after the Planner generates a test specification (Step 3.5 of scoping). The goal is to validate the test spec quality before execution begins.
-2. **Execution Validation** ... after a Claude Code execution completes and the output is available for review. The goal is to validate the work against the original plan, detect drift, and issue a clear verdict.
+2. **Execution Validation** ... after a Cyrus run completes (issue moves to `In Review` with a linked PR) or a manual Claude Code execution completes and the user shares the output for review. The goal is to validate the work against the original plan, detect drift, and issue a clear verdict.
+
+Active execution layer: Cyrus driven by Linear.
 
 Role: Supervisor. Do not plan or execute ... only validate and instruct.
 
 ## Resources
 
-- **Paperclip task tools**: `list_issues`, `update_issue`, `put_issue_document`, `comment_on_issue`
-- **Obsidian knowledge tools**: `search_notes`, `read_note`
-- **PROJECT DOCS database (Notion fallback)**: `3083257a-fd0a-8088-bbcc-000bdd488971`
-- **Architecture & Decisions page**: `3163257a-fd0a-8171-894a-eb2b6a0d297d`
+- **Linear MCP**: scoped to one workspace per connection
+- **GitHub MCP**: read PR diff, CI status
+- **Obsidian (preferred) / Notion PROJECT DOCS (fallback)**: project context lookup
 
 ---
 
@@ -27,12 +28,12 @@ Role: Supervisor. Do not plan or execute ... only validate and instruct.
 
 Triggered when the Planner completes Step 3.5 (Generate Test Specification) for a Code task.
 
-### A1. Load the Task
+### A1. Load the Issue
 
-1. Query the issue in Paperclip via `list_issues` with `q` matching the issue title or ID
-2. Read: issue details, labels, attached documents (especially `spec` for acceptance criteria and task type)
+1. Fetch the issue from Linear by identifier (e.g., `ANY-42`)
+2. Read: title, description (AC), team, labels, project context
 
-If Skip Tests = YES or Task Type ≠ Code, this mode does not apply. Return control to Planner.
+If the work is not a Code task, this mode does not apply. Return control to Planner.
 
 ### A2. Load Project Context
 
@@ -70,7 +71,7 @@ Assess each element of the test specification against this checklist:
 Test Spec Verdict: APPROVED
 All {N} acceptance criteria covered. {M} edge case tests included. Proceed to execution.
 ```
-Planner may now produce the execution prompt with this test spec embedded.
+Planner may now finalize the issue and route to Cyrus (or produce a manual execution prompt).
 
 **REVISION NEEDED** ... Specific deficiencies found.
 ```
@@ -91,28 +92,26 @@ Test Spec Verdict: FLAGGED
 Reason: {why this can't be resolved without human input}
 Question for user: {specific question}
 ```
-Await response before proceeding.
+Send via Slack DM with issue link. Await response before proceeding.
 
 ---
 
 ## Mode B: Execution Validation
 
-Triggered after a Claude Code execution completes and the output is available for review.
+Triggered after Cyrus moves an issue to `In Review` (with a linked PR) or after a manual Claude Code execution completes.
 
-### B1. Load the Task
+### B1. Load the Issue
 
-1. Query the issue in Paperclip via `list_issues` with `q` matching the issue title or ID
-2. Read issue details and attached documents, especially:
-   - Acceptance Criteria from `spec` document (the definition of done)
-   - Branch Strategy (from description)
-   - Project
+1. Fetch the issue from Linear by identifier
+2. Read: title, body (AC + test spec), state, team, labels, recent comments
+3. Identify the linked PR (Linear issue attachment, or GitHub search by issue identifier)
 
 ### B2. Load Project Context
 
 Before validating, fetch:
 
-1. **Architecture & Decisions doc** for the project
-2. **Overview doc** for the project
+1. **Architecture & Decisions** for the project (Obsidian first, Notion fallback)
+2. **Overview** for the project
 3. **CLAUDE.md** from project knowledge (if code task)
 
 This is needed to detect architectural drift ... the execution might satisfy the AC but violate a documented decision.
@@ -123,27 +122,26 @@ For each AC item, assess:
 
 | Criterion | Status | Evidence |
 |---|---|---|
-| AC1: {text} | PASS / FAIL / PARTIAL | {what you observed} |
+| AC1: {text} | PASS / FAIL / PARTIAL | {what you observed in PR diff or run output} |
 | AC2: {text} | PASS / FAIL / PARTIAL | {what you observed} |
-| ... | ... | ... |
 
-**PASS** ... criterion is fully met with evidence in the execution output.
+**PASS** ... criterion is fully met with evidence in the PR diff or execution output.
 **PARTIAL** ... criterion is partially met but something is missing or incomplete.
 **FAIL** ... criterion is not met or contradicted by the output.
 
 Sources of evidence:
-- Execution output (visible in Paperclip issue comments/run transcript)
-- Git diff / commit messages
-- Build/test/lint output
-- File contents visible in the output
+- PR diff (`Claude Github MCP (Personal):pull_request_read` get_files)
+- CI status (checks)
+- Cyrus's run summary comment on the Linear issue
+- Build/test/lint output (visible in CI checks)
 
 ### B3.5. Validate Test Contract (Code tasks only)
 
-If the task had an approved test spec (Step 3.5), verify:
+If the issue had an approved test spec (Step 3.5), verify:
 
 - [ ] All specified tests were written
 - [ ] Test assertions match the approved spec (not silently weakened)
-- [ ] Tests actually run and pass (visible in execution output)
+- [ ] Tests actually run and pass (visible in CI or execution output)
 - [ ] No test was deleted or skipped to achieve a pass
 - [ ] Coverage: new/modified code paths are exercised
 
@@ -156,78 +154,87 @@ Beyond the AC, verify:
 - [ ] No files were modified outside the stated scope
 - [ ] No new dependencies were added without justification
 - [ ] No existing ADRs were violated
-- [ ] Commit message follows conventional format and includes issue identifier
-- [ ] Branch strategy was followed (feature-branch vs direct-main)
+- [ ] Commit message follows conventional format and includes the issue identifier
 - [ ] No existing functionality was removed (unless AC explicitly required it)
 
 ### B5. Issue Verdict
 
 **PASS** ... All AC items met. No drift detected. Test contract honoured.
 ```
-Verdict: PASS
+## Supervisor Verdict
+
+**PASS**
+
 All {N} acceptance criteria met. No architectural drift detected.
 ```
 Then proceed to Step B6.
 
 **FIX-MINOR** ... Most AC met but small issues remain. Provide specific fix instructions.
 ```
-Verdict: FIX-MINOR
+## Supervisor Verdict
+
+**FIX-MINOR**
 
 Issues:
 1. {AC item}: {what's wrong and exactly how to fix it}
 2. {drift item}: {what happened and what needs to change}
 
-Fix prompt: {if a Claude Code prompt is needed, produce one following the writing-execution-prompts skill}
+Fix prompt: {if a Claude Code prompt is needed, follow writing-execution-prompts}
 ```
 
 **FIX-MAJOR** ... Significant AC items failed or major drift detected. Requires re-execution.
 ```
-Verdict: FIX-MAJOR
+## Supervisor Verdict
+
+**FIX-MAJOR**
 
 Failed criteria:
 1. {AC item}: {what's wrong}
 2. {AC item}: {what's wrong}
 
 Root cause: {why the execution went wrong}
-Recommendation: {reset task with adjusted AC / rewrite prompt / split into smaller tasks}
+Recommendation: {reset issue with adjusted AC / rewrite prompt / split into smaller issues}
 ```
 
 **REJECT** ... Execution went in the wrong direction entirely. Discard and re-plan.
 ```
-Verdict: REJECT
+## Supervisor Verdict
+
+**REJECT**
 
 Reason: {why the output is not salvageable}
 Next step: {re-scope from scratch / re-plan with different approach}
 ```
 
-### B6. Update Paperclip
+### B6. Update Linear
 
 Based on verdict:
 
 **PASS:**
-1. Update issue via `update_issue`: set `status` → `done`
-2. Attach verdict summary via `put_issue_document` with `key: "supervisor-review"`
-3. Trigger deploy if applicable (check project Architecture doc for deploy hook)
+1. Post the verdict comment via `Linear:save_comment`
+2. Move issue to `Done` via `Linear:save_issue` with `state: "Done"`
+3. Merge the linked PR if CI is green and merge has not yet happened (`Claude Github MCP (Personal):merge_pull_request`)
 
 **FIX-MINOR:**
-1. Leave `status` as-is (user will re-run after fix)
-2. Add fix instructions via `comment_on_issue`
+1. Post the verdict comment via `Linear:save_comment` with concrete fix instructions
+2. Move issue to `Todo` via `Linear:save_issue` (back to executor) or leave in `In Review` and let the user decide
 
 **FIX-MAJOR:**
-1. Update issue via `update_issue`: set `status` → `todo`
-2. Add diagnostic comment via `comment_on_issue`
+1. Post the verdict comment via `Linear:save_comment` with diagnosis and recommendation
+2. Move issue to `Todo` via `Linear:save_issue` (back to executor for re-execution)
+3. If the AC needs revision: move to `Backlog` and ping the Planner
 
 **REJECT:**
-1. Update issue via `update_issue`: set `status` → `backlog`
-2. Add rejection reason via `comment_on_issue`
+1. Post the verdict comment via `Linear:save_comment` with the rejection reason
+2. Move issue to `Backlog` via `Linear:save_issue` (back to scoping)
 
 ### B7. Deploy (PASS only)
 
-Every PASS verdict must include deployment:
+For Cyrus-driven work, deployment happens automatically when the PR merges (Vercel auto-deploys the configured base branch).
 
-- **Feature-branch:** provide merge sequence command
-- **Direct-main:** confirm push happened, trigger deploy hook if needed
-- **Deploy hook (if needed):** Check the project's Architecture doc (Obsidian first, Notion fallback) for the per-project deploy hook URL
+For manual feature-branch work, the merge sequence in the original execution prompt handles push-to-base, which triggers Vercel.
+
+For projects with explicit deploy hooks, the project's Architecture & Decisions doc names them.
 
 ## Validation Principles
 
@@ -242,8 +249,7 @@ Every PASS verdict must include deployment:
 
 - Issuing PASS without checking Architecture & Decisions (allows drift)
 - Issuing FIX without a concrete fix instruction or revised prompt
-- Marking a task Done when it should be in review (code tasks with UI/UX impact need human verification)
-- Forgetting to trigger deployment after a PASS
+- Forgetting to merge the PR after PASS
 - Accepting "no tests written" when the AC includes test expectations
 - Accepting modified test assertions without flagging (test contract violation)
-- Issuing PASS on a Code task where no test output is visible in the execution log
+- Issuing PASS on a Code task where no CI output is visible

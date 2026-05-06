@@ -27,9 +27,9 @@ Role: Development Planner throughout.
 Before forming any opinion, check what already exists:
 
 1. **Search project knowledge** for related architecture decisions, prior discussions, existing patterns
-2. **Fetch the project's Architecture & Decisions doc** from PROJECT DOCS (`3083257a-fd0a-8088-bbcc-000bdd488971`)
+2. **Fetch the project's Architecture & Decisions** ... Obsidian first (`wiki/projects/{slug}/architecture/`, `wiki/decisions/`); Notion PROJECT DOCS as fallback
 3. **Search past conversations** for prior discussions on this topic (use `conversation_search`)
-4. **Check the Roadmap doc** if this might affect sequencing
+4. **Check the Roadmap** if this might affect sequencing
 
 Document what you found. If a prior decision exists that this question touches, reference it explicitly ("This relates to ADR-011 which established ...").
 
@@ -37,8 +37,8 @@ Document what you found. If a prior decision exists that this question touches, 
 
 State clearly in one sentence what is being decided. Examples:
 - "Whether to use Vercel Password Protection, Vercel Authentication, or a Next.js middleware gate for dashboard auth"
-- "Whether to execute Delegator tasks via Claude Code CLI or Claude API"
-- "Whether to store generated test specs inline in the Paperclip issue description or as a separate document via `put_issue_document`"
+- "Whether to execute tasks via Claude Code CLI or Claude API"
+- "Whether to keep PROJECT DOCS in Notion or migrate to Linear documents"
 
 ### Step 3 ... Research Options
 
@@ -63,7 +63,7 @@ Use this standard format:
 |---|---|---|---|
 | **How it works** | {1-2 sentences} | {1-2 sentences} | {1-2 sentences} |
 | **Cost** | {$, time, complexity} | {$, time, complexity} | {$, time, complexity} |
-| **Implementation effort** | {hours/tasks} | {hours/tasks} | {hours/tasks} |
+| **Implementation effort** | {hours/issues} | {hours/issues} | {hours/issues} |
 | **Maintenance burden** | {ongoing cost} | {ongoing cost} | {ongoing cost} |
 | **Constraints/Risks** | {what could go wrong} | {what could go wrong} | {what could go wrong} |
 | **Affects existing ADRs** | {yes/no, which} | {yes/no, which} | {yes/no, which} |
@@ -78,18 +78,18 @@ Use this standard format:
 
 1. {First thing that happens}
 2. {Second thing}
-3. {Estimated task count and scope}
+3. {Estimated issue count and scope}
 ```
 
 ### Step 5 ... Get Decision
 
-Present the analysis and ask the user to confirm direction. Use `ask_user_input` for bounded choices. Frame as yes/no or Option A/B/C ... not open-ended.
+Present the analysis and ask the user to confirm direction. Use `ask_user_input_v0` for bounded choices. Frame as yes/no or Option A/B/C ... not open-ended.
 
 ### Step 6 ... Document the Decision
 
 Once the user confirms:
 
-1. **If it's an architectural decision:** Add an ADR entry to the project's Architecture & Decisions doc in Notion. Format:
+1. **If it's an architectural decision:** Add an ADR entry to the project's Architecture & Decisions. Write to Obsidian (`wiki/projects/{slug}/architecture/{slug}.md` or `wiki/decisions/{slug}.md`); mirror to Notion PROJECT DOCS for external collaborators if applicable. Format:
    ```
    **ADR-{NNN}: {Title}**
    Decision: {what was decided}
@@ -99,15 +99,15 @@ Once the user confirms:
    Date: {YYYY-MM-DD}
    ```
 
-2. **If it affects the roadmap:** Update the project's Roadmap doc
+2. **If it affects the roadmap:** Update the project's Roadmap
 
-3. **If it creates implementation work:** Create issue(s) in Paperclip following the scoping-and-queuing-tasks skill
+3. **If it creates implementation work:** Create issue(s) in Linear following the `scoping-and-queuing-tasks` skill
 
 4. **Update the Chat Log** for the relevant project with a structured entry:
    ```
    ### {Date} ... {Topic}
    **Decision:** {what was decided}
-   **Tasks created:** {TQ-IDs if any}
+   **Issues created:** {Linear identifiers if any}
    **Docs updated:** {which docs were changed}
    ```
 
@@ -126,4 +126,4 @@ Once the user confirms:
 - Recommending the most complex option because it's "more robust" without weighing implementation cost
 - Skipping Step 1 and proposing something that contradicts an existing decision
 - Researching only one option in depth and treating the others as strawmen
-- Forgetting to document the decision in Notion after it's made
+- Forgetting to document the decision after it's made

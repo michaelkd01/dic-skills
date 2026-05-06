@@ -30,8 +30,8 @@ This skill sits *before* `starting-a-new-project` in the lifecycle. Its output i
 ## Resources
 
 - **IDEA LOG database**: `collection://dfeab587-d3fd-4d14-871b-063a92cf17ff`
-- **PROJECT DOCS database**: `3083257a-fd0a-8088-bbcc-000bdd488971`
-- **Chat Log**: Log material outcomes per standard memory instructions
+- **PROJECT DOCS context**: search Obsidian first (`wiki/projects/`); Notion PROJECT DOCS as fallback for cross-project context
+- **Chat Log**: log material outcomes per standard memory instructions
 
 ## Evaluation Structure
 
@@ -73,7 +73,7 @@ Research depth: 3-5 web searches minimum. Fetch at least one authoritative sourc
 
 **Gate 1 Decision Point**
 
-Present findings and ask the user to confirm direction using `ask_user_input`:
+Present findings and ask the user to confirm direction using `ask_user_input_v0`:
 
 - **Proceed to Gate 2** ... problem is real, buyer alignment exists (or has a viable path), competitive landscape has a gap
 - **Park** ... interesting but unclear, needs more info, not the right time to evaluate further
@@ -96,7 +96,7 @@ Only reached if Gate 1 passes.
 
 **2b. Build Complexity**
 
-- Can this be built with the current stack? (Next.js, Swift, Python)
+- Can this be built with the current stack and pipeline? (Next.js, Swift, Python, Cyrus + Linear)
 - Rough build effort estimate for MVP (days/weeks, not months)
 - Are there hard technical dependencies? (APIs, regulatory, third-party integrations, hardware)
 - Does it require capabilities outside the current toolset? (e.g., ML model training, real-time video, payments infrastructure)
@@ -110,7 +110,7 @@ Only reached if Gate 1 passes.
 
 **Gate 2 Decision Point**
 
-Present findings and ask the user to confirm direction using `ask_user_input`:
+Present findings and ask the user to confirm direction using `ask_user_input_v0`:
 
 - **Proceed to Gate 3** ... business model works, you can build it, revenue timeline is acceptable
 - **Park** ... model needs refinement, or build effort is too high right now given current commitments
@@ -147,7 +147,7 @@ Only reached if Gate 2 passes.
 
 **Gate 3 Decision Point**
 
-Present findings and ask the user to confirm final direction using `ask_user_input`:
+Present findings and ask the user to confirm final direction using `ask_user_input_v0`:
 
 - **Go** ... passes all gates, proceed to `starting-a-new-project`
 - **Park** ... passes on merit but timing or strategic fit isn't right now
@@ -161,7 +161,7 @@ Regardless of the outcome, create an entry in the **IDEA LOG** database.
 
 ### IDEA LOG Entry
 
-Create via `notion-create-pages` with the following properties:
+Create via `Notion:notion-create-pages` with the following properties:
 
 | Property | Value |
 |---|---|
