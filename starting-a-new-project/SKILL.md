@@ -1,166 +1,223 @@
 ---
 name: starting-a-new-project
-description: Step-by-step procedure for bootstrapping a new project from naming to first Linear issue ready for Cyrus
+description: Step-by-step procedure for bootstrapping a new project from naming to first Linear-ready issue
 ---
 
 # New Project Kickoff Runbook
 
 ## Context
 
-This runbook is triggered when the user wants to start a new project. It covers everything from naming to having a scaffold issue ready in Linear and wired to Cyrus. The goal is zero missed steps ... every project gets the same infrastructure.
+Triggered when the user wants to start a new project under an existing venture, or to bootstrap a brand-new venture. Covers naming, Linear setup, Obsidian wiki stub, Cyrus config wiring, and the first scaffold issue. The goal is zero missed steps ... every project gets the same infrastructure.
 
-Active execution layer: Cyrus driven by Linear. Knowledge layer: Obsidian + Notion PROJECT DOCS.
-
-Role: Development Planner throughout.
+Role: Development Planner throughout. Some actions are direct via MCP tools (Linear, Obsidian, GitHub). Code and file changes (scaffold, Cyrus config edit) are delegated via Claude Code execution prompts per `writing-execution-prompts`.
 
 ## Inputs Required
 
 Before starting, confirm with the user:
 
-1. **Project name** (e.g., "SOABridge")
-2. **Project code** (short prefix, e.g., `SOA`)
-3. **Repo folder name** (directory in `~/Developer/`, e.g., `soabridge`)
-4. **Tech stack** (Python, TypeScript/Next.js, Swift, etc.)
-5. **Brief purpose** (one sentence)
-6. **Linear placement decision**: own team, or scope label inside an existing team? Generally each *business* gets its own Linear workspace; sub-projects within a business can share a team with scope labels.
+1. **Venture** ... which company hierarchy this belongs to (AnytimeInterview, Bespoke, GymToGreen, ScreenTimeMath, DickBot, SC Internal, or a new venture being bootstrapped)
+2. **Project name** (display name in Linear, e.g., "Customer Portal")
+3. **Repo name** (kebab-case, what `git@github.com:michaelkd01/{name}.git` will be ... e.g., "bespoke-customer-portal")
+4. **Tech stack** (Python, TypeScript/Next.js, Vite/React, Swift, etc.)
+5. **Brief purpose** (one sentence ... what does this project do?)
 
-Use `ask_user_input_v0` to collect bounded choices (tech stack, Linear placement). Use open-ended questions for name and purpose.
+Use `ask_user_input` for bounded choices (venture, tech stack). Use open-ended questions for name and purpose.
+
+## Phase Overview
+
+```mermaid
+flowchart TD
+    A[New project request] --> B[Phase 1: Naming and Validation]
+    B --> C{New venture?}
+    C -->|Yes| D[Phase 2a: Create Linear team]
+    C -->|No| E[Phase 2b: Create Linear project]
+    D --> E
+    E --> F[Phase 2c: Description per template]
+    F --> G[Phase 3: Obsidian wiki stub]
+    G --> H[Phase 4: Cyrus config wiring]
+    H --> I[Phase 5: Scaffold Linear issue]
+    I --> J[Cyrus auto-picks up]
+    J --> K[Phase 6: Confirm and summary]
+
+    classDef start fill:#FEF3C7,stroke:#F59E0B,color:#78350F
+    classDef linear fill:#E0E7FF,stroke:#6366F1,color:#312E81
+    classDef obs fill:#E8F4FD,stroke:#3B82F6,color:#1E3A5F
+    classDef cyrus fill:#F3E8FF,stroke:#A855F7,color:#581C87
+
+    class A,K start
+    class D,E,F,I linear
+    class G obs
+    class H,J cyrus
+```
 
 ## Workflow
 
 ### Phase 1 ... Naming & Validation
 
-1. Confirm the repo folder name follows conventions:
-   - Lowercase
-   - No spaces
+1. Confirm the repo name follows conventions:
+   - Lowercase, kebab-case (npm / GitHub compatibility)
+   - No spaces or underscores
    - Matches `git@github.com:michaelkd01/{name}.git`
-2. Confirm the project name is unique across the portfolio (check `_shared/repo-paths.md` and Notion PROJECT DOCS Project select)
-3. Construct the full repo path: `/Users/michaeldavidson/Developer/{folder-name}`
+2. Construct the full local repo path: `/Users/michaeldavidson/Developer/{repo-name}`
+3. If this is a brand-new venture (no existing Linear team), flag Phase 2a is required.
 
 ### Phase 2 ... Linear Setup
 
-**If creating a new Linear team:**
+**2a. (New venture only) Create Linear team**
 
-1. In Linear UI: Create Team with the desired prefix
-2. Mirror the canonical workflow states from AnytimeInterview: `Backlog`, `Todo`, `In Progress`, `Investigation Complete`, `In Review`, `Done`, `Canceled`, `Duplicate`
-3. Add canonical labels: `Investigate`, `CI Failed`, `Feature`, `Improvement`, `Bug`
-4. Add scope labels per the workspace's scope structure
+No MCP path for this ... must be done in the Linear UI:
+- Linear → Settings → Teams → New team
+- Name: {Venture}
+- Key: short prefix (e.g., "GTG" for GymToGreen)
 
-**If using an existing team with a scope label:**
+Once the team exists, `cyrus self-auth-linear` must be run interactively on the Mac Mini before any Cyrus config changes for this workspace. This is a known blocker; see `wiki/projects/cyrus.md`.
 
-1. Add a scope label for the new project if it doesn't exist (via Linear UI or `Linear` MCP if available in this chat)
-2. Document the scope label in `_shared/repo-paths.md`
+**2b. Create the Linear project**
 
-### Phase 3 ... Knowledge Layer Setup
+Use Linear MCP `save_project`:
+- `teamId`: the venture's team ID
+- `name`: the project name
+- `description`: see Phase 2c
 
-**Obsidian:**
+**2c. Write the project description**
 
-1. Create `wiki/projects/{slug}.md` with the standard project frontmatter and headings (Purpose, Stack, Status, Connections)
-2. Create `wiki/projects/{slug}/architecture/` directory for ADRs as the project develops
+Follow the standard five-section template at `wiki/decisions/linear-project-description-template.md`:
 
-**Notion PROJECT DOCS** (fallback / external collaboration):
+- **Purpose paragraph** ... one paragraph, names audience and job-to-be-done
+- **Scope** ... what is in vs out, sibling-project boundaries
+- **Surface** ... repo, routes/endpoints, auth gate, layout/middleware
+- **Stack** ... framework, runtime, hosting, build chain, branch model
+- **Sibling projects** ... cross-links to peers with one-line summaries
+- **Wiki** ... five wiki path pointers max
 
-1. Add the project to the PROJECT DOCS database `Project` select if it doesn't exist. **CRITICAL:** restate ALL existing options when adding a new one. Omitted options are silently deleted.
-2. Create the standard four docs in a single `Notion:notion-create-pages` batch with parent `{'data_source_id': '3083257a-fd0a-8088-bbcc-000bdd488971'}`:
+Rules from the template (full list in the decision note):
+- No local file paths ... GitHub URL is canonical
+- Stack identical across siblings sharing a repo
+- Sibling list is exhaustive
+- Five wiki links max
 
-| Doc Name | Doc Type | Initial Content |
-|---|---|---|
-| `{Code} ... Overview` | Overview | Purpose, tech stack, status, key constraints |
-| `{Code} ... Architecture & Decisions` | Architecture | Architecture section + empty Decisions section with ADR template |
-| `{Code} ... Roadmap` | Roadmap | Phased plan or "To be defined" |
-| `{Code} ... Chat Log` | Chat Log | Header and empty first entry template |
+Push via Linear MCP `save_project` with `id` (returned from 2b) and `description`.
 
-Set `Project` and `Status: Active` on all docs.
+### Phase 3 ... Obsidian Wiki Setup
 
-### Phase 4 ... Cyrus Configuration
+Use Obsidian MCP `write_note` to create the project hub note.
 
-Add the new repo to `~/.cyrus/config.json` on the Mac Mini under the appropriate workspace block:
-- `repository`: `michaelkd01/{folder-name}`
-- `baseBranch`: typically `staging` or `main` per repo convention
-- Any scope-label routing if applicable
+For new ventures, also create the venture hub at `wiki/projects/{venture}.md` with sub-sections for each project.
 
-`pm2 restart cyrus` to apply.
-
-### Phase 5 ... Update _shared/repo-paths.md
-
-Add the new project to the canonical Project ↔ Repo Path table.
-
-### Phase 6 ... Scaffold Issue
-
-Create a scaffold issue in Linear via `Linear:save_issue`:
+For a new project under an existing venture, create `wiki/projects/{venture}/{project}.md` with this stub:
 
 ```
-title: Scaffold {ProjectName} repo
-team: {team key}
-state: Todo
-labels: [scaffold, {scope label if applicable}]
-priority: 2 (High)
-description:
-  ## Context
-  Bootstrapping the {ProjectName} repo for first commits.
+# {Project Name}
 
-  ## Acceptance Criteria
-  {stack-specific AC, see below}
+One-line purpose. Sits under [[{venture}]] in the venture hub.
+
+## Architecture
+TBD.
+
+## Decisions
+None yet.
+
+## Repo
+- github.com/michaelkd01/{repo-name}
+- CLAUDE.md mirrored at `raw/repos/{repo-name}-CLAUDE.md` after first execution.
+
+## Connections
+- [[{venture}]]
+- [[cyrus]]
 ```
 
-**Python scaffold AC:**
-```
-1. Create repo at ~/Developer/{folder-name} with:
-   - pyproject.toml (uv-managed, Python 3.12+)
-   - src/{package_name}/__init__.py
-   - src/{package_name}/main.py with placeholder
-   - tests/test_main.py with one passing test
-   - .gitignore (Python)
-   - CLAUDE.md with project context, commands, architecture
-   - README.md
-2. ruff check passes
-3. pytest passes
-4. git init, initial commit, push to michaelkd01/{folder-name}
-```
+### Phase 4 ... Cyrus Config Wiring
 
-**TypeScript/Next.js scaffold AC:**
-```
-1. Create repo at ~/Developer/{folder-name} with:
-   - Next.js app (npx create-next-app)
-   - TypeScript configured
-   - Tailwind CSS configured
-   - .gitignore (Node)
-   - CLAUDE.md with project context, commands, architecture
-   - README.md
-2. npm run build passes
-3. npx tsc --noEmit passes
-4. git init, initial commit, push to michaelkd01/{folder-name}
-```
+Cyrus needs a repo entry in `~/.cyrus/config.json` to pick up Linear issues for this project. Source-of-truth: `/Users/michaeldavidson/Developer/infra-config/cyrus/` (branch `feature/any-42-cyrus-config-tracking` until promoted to main).
 
-**Swift/iOS scaffold AC:**
-```
-1. Create Xcode project at ~/Developer/{folder-name} with:
-   - SwiftUI app target
-   - Test target with one passing test
-   - .gitignore (Xcode/Swift)
-   - CLAUDE.md with project context, commands, architecture
-   - README.md
-2. xcodebuild clean build passes
-3. git init, initial commit, push to michaelkd01/{folder-name}
-```
+This requires a file change on the Mac Mini ... delegate via a Claude Code execution prompt per `writing-execution-prompts`. The prompt must:
 
-### Phase 7 ... Confirm & Summarize
+1. Add a new entry under `repositories` in `~/.cyrus/config.json` with:
+   - `repositoryPath`: `/Users/michaeldavidson/Developer/{repo-name}`
+   - `repositoryName`: `{repo-name}`
+   - `baseBranch`: `main`
+   - `linearWorkspaceId`, `linearWorkspaceName`, `linearToken`: copy from an existing entry for the same workspace, or freshly auth'd if new venture
+   - `teamKeys`: the Linear team key (e.g., `["BES"]`)
+   - `routingLabels`: `{repo-name}` as the label value if this workspace contains multiple repos (mirrors the `anytimeinterview2` pattern)
+   - `appendInstruction` and `disallowedTools`: copy from `anytimeinterview2` entry as baseline
+2. Mirror the change in the source-of-truth at `/Users/michaeldavidson/Developer/infra-config/cyrus/`.
+3. `pm2 restart cyrus`.
+4. Verify with `curl -s https://cyrus.socialclub.ltd/status`.
 
-Post a summary:
+**Known blockers:**
+- New Linear workspaces require interactive `cyrus self-auth-linear` first (cannot be automated)
+- The infra-config source-of-truth lives on a feature branch until promoted
+
+### Phase 5 ... Scaffold Issue
+
+Create the first Linear issue under the new project ... a scaffold task that produces the initial repo skeleton.
+
+Use Linear MCP `save_issue`:
+- `teamId`: venture team ID
+- `projectId`: from Phase 2b
+- `title`: "Scaffold {repo-name} repo"
+- `description`: see below
+- `labelIds`: include the `routingLabels` value from Phase 4 if multi-repo workspace
+- `priority`: 1 (Urgent) ... unblocks first real work
+
+Scaffold issue description:
 
 ```
-Project {ProjectName} ({Code}) initialized:
-- Linear: {team / scope label} configured
-- Knowledge: Obsidian project page + Notion PROJECT DOCS (Overview, Architecture, Roadmap, Chat Log)
-- Cyrus: workspace block added, restart applied
-- Repo path: /Users/michaeldavidson/Developer/{folder-name} (added to _shared/repo-paths.md)
-- Scaffold issue: {identifier}, state: Todo
-- Next: Cyrus picks up scaffold and opens initial PR
+Create the initial scaffold for {repo-name} at /Users/michaeldavidson/Developer/{repo-name}.
+
+## Acceptance Criteria
+{paste stack-specific AC from the table below}
+
+## Verification
+- {build command} passes
+- {test/lint command} passes
+- git init, initial commit, push to github.com/michaelkd01/{repo-name}
+
+## CLAUDE.md
+Include a CLAUDE.md with: project purpose, commands (build, test, lint, dev), architecture overview, key dependencies.
 ```
 
-## Post-Scaffold Checklist
+Stack-specific Acceptance Criteria:
 
-- [ ] Verify repo exists on GitHub at `michaelkd01/{folder-name}`
-- [ ] Verify Cyrus opened the initial PR
-- [ ] Supervisor verdict on the scaffold PR (see `reviewing-completed-work`)
-- [ ] First real task can be created
+| Stack | AC |
+|---|---|
+| Python (uv) | `pyproject.toml` (uv-managed, Python 3.12+), `src/{pkg}/__init__.py`, `src/{pkg}/main.py`, `tests/test_main.py` with one passing test, `.gitignore` (Python), `CLAUDE.md`, `README.md`. `ruff check` passes, `pytest` passes. |
+| TypeScript / Next.js | `npx create-next-app` with TypeScript + Tailwind, `.gitignore` (Node), `CLAUDE.md`, `README.md`. `npm run build` passes, `npx tsc --noEmit` passes. |
+| Vite / React | `npm create vite@latest` with react template (TS or JSX as specified), ESLint configured, `.gitignore` (Node), `CLAUDE.md`, `README.md`. `npm run build` passes, `npm run lint` passes. |
+| Swift / iOS | Xcode project with SwiftUI app target + test target with one passing test, `.gitignore` (Xcode/Swift), `CLAUDE.md`, `README.md`. `xcodebuild clean build` passes. |
+
+Cyrus will auto-pick up the issue once it's in the right state and Phase 4 wiring is verified.
+
+### Phase 6 ... Confirm & Summarize
+
+Post a summary to the user:
+
+```
+Project {ProjectName} initialized:
+- Linear: project created under {Venture} team, description per template
+- Obsidian: wiki/projects/{venture}/{project}.md stub created
+- Cyrus: repo entry added to ~/.cyrus/config.json (pm2 restarted, status: green)
+- Scaffold: Linear issue {TEAM-KEY}-{N} created, Cyrus will pick up
+- Repo path: /Users/michaeldavidson/Developer/{repo-name}
+- Next: monitor Cyrus pickup, then first real issue
+```
+
+## Post-Scaffold Checklist (after Cyrus runs the scaffold)
+
+- [ ] Verify repo exists on GitHub at `michaelkd01/{repo-name}`
+- [ ] Verify CLAUDE.md is present and has correct commands
+- [ ] Mirror CLAUDE.md to wiki: `raw/repos/{repo-name}-CLAUDE.md` (manual or via separate task)
+- [ ] Update the Linear project description's Wiki section to include the CLAUDE.md mirror path
+- [ ] First real Linear issue can be created
+
+## Related Skills
+
+- `writing-execution-prompts` ... for Cyrus config edit (Phase 4) and any follow-up code tasks
+- `scoping-and-queuing-tasks` ... for the first real issue after scaffold
+- `researching-options-and-decisions` ... if stack or architecture decisions need to be made before scaffold
+
+## Related Decisions
+
+- `wiki/decisions/linear-project-description-template.md` ... template applied in Phase 2c
+- `wiki/decisions/linear-cyrus-replaces-paperclip.md` ... why this runbook is Linear-centric, not Notion-centric
+- `wiki/decisions/strict-mcp-config-for-agents.md` ... Cyrus tool surface conventions referenced in Phase 4
