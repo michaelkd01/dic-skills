@@ -201,4 +201,3 @@ For projects with explicit deploy hooks, the project's Architecture & Decisions 
 - `_shared/repo-paths.md` ... canonical Project ↔ Repo Path mapping
 - `writing-execution-prompts` ... format for manual Claude Code prompts
 - `reviewing-completed-work` ... Supervisor validation of completed work
-- `hourly-supervisor-review` ... scheduled Supervisor sweep of `In Review`

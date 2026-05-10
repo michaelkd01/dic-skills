@@ -24,7 +24,6 @@ Skills are organised by which role in the three-role model consumes them.
 
 ### Supervisor
 - `reviewing-completed-work` ... PASS / FIX / REJECT verdicts on PRs
-- `hourly-supervisor-review` ... scheduled supervisor sweep
 
 ### Cross-role
 - `mermaid-diagrams` ... diagram authoring
