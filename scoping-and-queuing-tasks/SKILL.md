@@ -18,6 +18,7 @@ Role: Development Planner throughout. Switch to Supervisor only if validating co
 - **Linear MCP**: scoped to one workspace per connection
 - **Obsidian (preferred) / Notion PROJECT DOCS (fallback)**: project context lookup
 - **`_shared/repo-paths.md`**: canonical Project ↔ Repo Path mapping for human reference
+- **Linear project description**: agent bootstrap context for each project, populated per `wiki/decisions/linear-project-description-template.md`
 
 ## Workflow
 
@@ -37,11 +38,12 @@ Determine whether this is an existing issue or a new one.
 
 ### Step 2 ... Gather Project Context
 
-Before scoping or producing a prompt, ALWAYS fetch project context:
+Before scoping or producing a prompt, ALWAYS fetch project context. Read in this order:
 
-1. **Architecture & Decisions** ... Obsidian first (`wiki/projects/{slug}/architecture/`, `wiki/decisions/`); Notion PROJECT DOCS as fallback (search `{ProjectCode} ... Architecture & Decisions`)
-2. **Overview** ... Obsidian first; Notion PROJECT DOCS as fallback (search `{ProjectCode} ... Overview`)
-3. **Repo CLAUDE.md** ... if the task involves code, read it from project knowledge or the local repo
+1. **Linear project description** ... read the parent project's description via `Linear:get_project` (the issue's `projectId` resolves to this). The description follows the five-section template at `wiki/decisions/linear-project-description-template.md` and carries: repo URL, routes / endpoints, auth gate, stack, sibling-project boundaries, and wiki pointers. This is the agent's bootstrap context ... read it first regardless of task size.
+2. **Architecture & Decisions** ... Obsidian first (`wiki/projects/{slug}/architecture/`, `wiki/decisions/`); Notion PROJECT DOCS as fallback (search `{ProjectCode} ... Architecture & Decisions`)
+3. **Overview** ... Obsidian first; Notion PROJECT DOCS as fallback (search `{ProjectCode} ... Overview`)
+4. **Repo CLAUDE.md** ... if the task involves code, read it from project knowledge or the local repo
 
 Read enough to understand:
 - Current architecture and constraints
@@ -186,6 +188,7 @@ For projects with explicit deploy hooks, the project's Architecture & Decisions 
 
 ## Common Mistakes to Avoid
 
+- Forgetting to fetch the Linear project description before scoping (causes prompts that contradict the auth model, route prefixes, or stack documented in the project's Surface section)
 - Forgetting to fetch Architecture & Decisions before scoping (causes architectural drift)
 - Pasting the full execution prompt into the issue body (clutters; use a sub-document)
 - Setting state to `Todo` before AC and test spec are validated (Cyrus may pick up incomplete work)
@@ -194,6 +197,7 @@ For projects with explicit deploy hooks, the project's Architecture & Decisions 
 
 ## See Also
 
+- `wiki/decisions/linear-project-description-template.md` ... the five-section template referenced in Step 2
 - `_shared/repo-paths.md` ... canonical Project ↔ Repo Path mapping
 - `writing-execution-prompts` ... format for manual Claude Code prompts
 - `reviewing-completed-work` ... Supervisor validation of completed work
