@@ -124,6 +124,30 @@ Cyrus auto-creates branches from Linear issues using its own convention. When wr
 - Direct-main tasks: no branch
 - Fix without a Linear issue: `fix/{kebab-case-description}`
 
+## Base Branch
+
+Cyrus resolves the base branch for every spawned worktree via `GitService.determineBaseBranch()` in this priority order:
+
+0. **Explicit override** ... `[repo=name#branch]` syntax in the Linear issue description body
+1. **Graphite blocked-by relationship** ... stacked PRs
+2. **Parent issue branch** ... for sub-issues whose parent has an active branch
+3. **Repository default** ... `repositories[<name>].baseBranch` in `~/.cyrus/config.json` (terminal fallback)
+
+There is **no live GitHub API lookup** at issue time. The terminal fallback is whatever string sits in the config file.
+
+**Do NOT specify the base branch in prompt prose.** Phrases like "branch from main", "create a branch off staging", or "make sure you branch from X" contradict Cyrus's actual resolution and trigger recovery loops. SOC-18 documented the failure mode: on ANY-230, prompt prose said "branch from main" while config priority 3 (correctly) put Cyrus on `staging` ... Cyrus then presented destructive recovery options to reconcile the mismatch.
+
+If an override is needed for one issue, use the explicit `[repo=name#branch]` syntax in the Linear description (priority 0). Otherwise, stay silent and let the config default win.
+
+Per-repo defaults (Planner reference, not for prompt body):
+
+| Repo | `baseBranch` |
+|---|---|
+| `anytimeinterview2` | `staging` (main is parked pending BV6 promotion) |
+| `bespoke-website-main` | `main` |
+
+When a new repo is wired into Cyrus, record its `baseBranch` here.
+
 ## Concurrency Classification
 
 Every prompt in a multi-prompt response MUST be labelled with one of:
@@ -167,6 +191,7 @@ Before delivering any prompt, verify ALL of the following:
 - [ ] Commit & push is the FINAL numbered step, explicitly separated
 - [ ] Commit message includes `{LINEAR-KEY}-{N}`
 - [ ] Branch strategy is correct for the task type
+- [ ] **Base branch is NOT mentioned in prompt prose** (let Cyrus resolve from config; use `[repo=name#branch]` syntax only if explicit override is required)
 - [ ] Verification step exists (build, test, lint as appropriate)
 - [ ] Rules block is present
 - [ ] Rules block includes "Do not remove existing functionality unless explicitly instructed"
@@ -198,6 +223,7 @@ File naming: `{LINEAR-KEY}-{N}-{kebab-case-description}.md` (e.g., `ANY-19-csp-r
 - Never let the executor modify test assertions to make them pass
 - Never direct-main push to a repo branch that auto-deploys to production
 - Never edit `~/.cyrus/config.json` without mirroring to `~/Developer/infra-config/cyrus/` and restarting pm2
+- **Never specify the base branch in prompt prose** ("branch from main", "create a branch off staging"). Cyrus resolves the base from config via `GitService.determineBaseBranch()`; contradicting it in prose causes recovery loops. Use `[repo=name#branch]` in the Linear description for explicit overrides.
 
 ## Related
 
