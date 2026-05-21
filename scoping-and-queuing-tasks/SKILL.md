@@ -163,6 +163,7 @@ If the task is going to a manual Claude Code session (e.g., legacy work outside 
 4. Commit/push as final step
 5. Rules block present
 6. Test Contract section present (for Code tasks)
+7. **Do not specify the base branch in prompt prose** ... Cyrus resolves it from config via `GitService.determineBaseBranch()`. See the "Base Branch" section in `writing-execution-prompts` for the resolution priority order and per-repo defaults. Use `[repo=name#branch]` in the Linear description only when an explicit override is required.
 
 For manual prompts attached to a Linear issue, store as a sub-document via `Linear:save_document` with the issue as parent. Do not paste the full prompt into the issue body; the body holds spec, the document holds the prompt.
 
@@ -194,10 +195,11 @@ For projects with explicit deploy hooks, the project's Architecture & Decisions 
 - Setting state to `Todo` before AC and test spec are validated (Cyrus may pick up incomplete work)
 - Approving a test spec that only covers happy paths (edge cases catch most bugs)
 - Forgetting to apply scope labels (Bespoke specifically uses `bespoke-portal` / `bespoke-website` / `bespoke-api` for routing)
+- **Specifying the base branch in prompt prose** ("branch from main", "create a branch off staging"). Cyrus resolves the base from `repositories[].baseBranch` in `~/.cyrus/config.json`; contradicting it in prose triggers recovery loops (see ANY-230 incident documented in SOC-18). Use `[repo=name#branch]` in the Linear description for explicit overrides instead. See `writing-execution-prompts` → Base Branch.
 
 ## See Also
 
 - `wiki/decisions/linear-project-description-template.md` ... the five-section template referenced in Step 2
 - `_shared/repo-paths.md` ... canonical Project ↔ Repo Path mapping
-- `writing-execution-prompts` ... format for manual Claude Code prompts
+- `writing-execution-prompts` ... format for manual Claude Code prompts (incl. Base Branch section)
 - `reviewing-completed-work` ... Supervisor validation of completed work
