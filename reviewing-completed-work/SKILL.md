@@ -253,3 +253,14 @@ For projects with explicit deploy hooks, the project's Architecture & Decisions 
 - Accepting "no tests written" when the AC includes test expectations
 - Accepting modified test assertions without flagging (test contract violation)
 - Issuing PASS on a Code task where no CI output is visible
+
+## Handback Audit (MANDATORY final output)
+
+Every deliverable produced under this skill ... plan, scoped issue, execution prompt, verdict, or status update ... MUST end with a Handback Audit block:
+
+HANDBACK AUDIT
+Items assigned to a human: {N}
+- {action} | category: {interactive-only auth | credential confirmed absent | irreversible high-stakes | judgment call} | evidence: {what was checked and why no autonomous path exists}
+(if N = 0): NONE ... every action is autonomous or queued to an agent.
+
+An item that cannot be mapped to an allowed category with evidence is a defect: convert it into an autonomous step or execution prompt before delivery. A deliverable missing this block fails validation. The categories and evidence standard are defined by the Capability Exhaustion Gate in the writing-execution-prompts skill.

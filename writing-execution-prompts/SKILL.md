@@ -181,6 +181,22 @@ Single prompts: label EXCLUSIVE unless there's a reason not to.
 - Never direct-main push to a branch that auto-deploys to production
 - For two-Vercel-project repos (e.g., AnytimeInterview2): use empty-commit Git integration triggers, never `vercel deploy --prod`, to avoid cross-project contamination
 
+## Capability Exhaustion Gate (MANDATORY)
+
+No prompt, step, verdict, or status update may route work back to a human until every autonomous path has been exhausted and the exhaustion is documented. This gate exists because shallow checks ("not in the Keychain", "not in the first vault searched") have repeatedly been escalated as NOT-CAPABLE and converted into manual human work (see SOC-68), and because actions with an obvious CLI/MCP equivalent have been handed back as "dashboard work" (see BES-119).
+
+Before any NOT-CAPABLE conclusion, or any instruction that a human retrieve, mint, configure, deploy, click, or paste anything, the executor MUST check all of the following and record the result of each:
+
+1. **1Password ... Social Club account only** (service account `op-service-account-orchestrator`). Search ALL accessible vaults with multiple terms (service name, "API", "token", "key", "global", "master"). A single-vault title grep is not a search. Never query the Propell or davidsons-aus accounts.
+2. **Derivable credentials** ... a parent credential that can MINT the needed one counts as having it. A Cloudflare Global API Key or Tokens:Write token can mint scoped tokens via the API; most providers have an equivalent. Derivation is mandatory, not optional.
+3. **Host state** ... environment variables, `~/.cyrus/`, `~/Developer/infra-config/`, project `.env*` files, launchd plists, macOS Keychain.
+4. **Direct API/CLI/MCP paths** ... whether an already-authenticated API, CLI, or MCP tool can perform the action without the missing credential at all.
+5. **Action capability (applies even when NO credential is missing)** ... before instructing a human to create, deploy, provision, configure, click, or paste anything, confirm that no installed CLI (`gh`, `vercel`, `wrangler`, `op`, ...) and no connected MCP (Vercel, Cloudflare, GitHub, Linear, ...) already performs the action. Consult the Executor Capability Manifest if present; otherwise verify live (`--help`, `--dry-run`, a list/status subcommand). "It looks like dashboard work" is not evidence: most dashboard actions have a CLI or API equivalent (Vercel project create + env add + deploy; Cloudflare DNS; GitHub repo/PR). The burden is to prove no tool covers it, not to assume none does.
+
+A NOT-CAPABLE verdict is valid ONLY if it lists every location checked, the exact commands or queries used, and why each path failed.
+
+Human handback is permitted only for: interactive-only auth (browser OAuth / device flows), credentials confirmed absent from all of the above, irreversible high-stakes actions, or genuine judgment calls.
+
 ## Validation Checklist
 
 Before delivering any prompt, verify ALL of the following:
@@ -200,6 +216,8 @@ Before delivering any prompt, verify ALL of the following:
 - [ ] Repo path matches the Linear project's `Surface > Repo` (verify against the project description)
 - [ ] Test Contract section is present (for Code tasks without an explicit waiver)
 - [ ] If this is a Cyrus config edit: source-of-truth mirror, pm2 restart, and status check are all in the steps
+- [ ] Every step that can fail on a missing credential or permission is preceded by a Capability Exhaustion Gate discovery phase
+- [ ] The deliverable ends with a Handback Audit block, and every item in it carries an allowed category plus evidence
 
 ## Delivery Format
 
@@ -224,6 +242,9 @@ File naming: `{LINEAR-KEY}-{N}-{kebab-case-description}.md` (e.g., `ANY-19-csp-r
 - Never direct-main push to a repo branch that auto-deploys to production
 - Never edit `~/.cyrus/config.json` without mirroring to `~/Developer/infra-config/cyrus/` and restarting pm2
 - **Never specify the base branch in prompt prose** ("branch from main", "create a branch off staging"). Cyrus resolves the base from config via `GitService.determineBaseBranch()`; contradicting it in prose causes recovery loops. Use `[repo=name#branch]` in the Linear description for explicit overrides.
+- Never conclude NOT-CAPABLE from a single-location credential check
+- Never hand a human a task that an available parent credential could derive or an authenticated API could perform
+- Never hand a human a deploy/provision/config action without first checking the installed CLIs and connected MCPs that perform it (see BES-119: a Vercel deploy was handed back when vercel + gh + op and the Vercel MCP all covered it)
 
 ## Related
 
@@ -231,3 +252,14 @@ File naming: `{LINEAR-KEY}-{N}-{kebab-case-description}.md` (e.g., `ANY-19-csp-r
 - `scoping-and-queuing-tasks` ... the upstream procedure that defines the test spec consumed by the Test Contract
 - `reviewing-completed-work` ... the downstream procedure for the supervisor verdict
 - `wiki/decisions/linear-cyrus-replaces-paperclip.md` ... why Linear is the prompt-delivery surface
+
+## Handback Audit (MANDATORY final output)
+
+Every deliverable produced under this skill ... plan, scoped issue, execution prompt, verdict, or status update ... MUST end with a Handback Audit block:
+
+HANDBACK AUDIT
+Items assigned to a human: {N}
+- {action} | category: {interactive-only auth | credential confirmed absent | irreversible high-stakes | judgment call} | evidence: {what was checked and why no autonomous path exists}
+(if N = 0): NONE ... every action is autonomous or queued to an agent.
+
+An item that cannot be mapped to an allowed category with evidence is a defect: convert it into an autonomous step or execution prompt before delivery. A deliverable missing this block fails validation. The categories and evidence standard are defined by the Capability Exhaustion Gate in the writing-execution-prompts skill.
