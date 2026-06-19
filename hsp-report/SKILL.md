@@ -1,11 +1,11 @@
 ---
 name: hsp-report
-description: Generate the two client-facing Home Stewardship Plan (HSP) deliverables — a branded Word document and a glossy PDF — from a raw SafetyCulture Home Safety Assessment (HSA) export. Use whenever an operator needs to turn a completed HSA into a client-ready HSP.
+description: Generate the two client-facing Home Stewardship Plan (HSP) deliverables — a branded Word document and a glossy PDF — from a raw SafetyCulture Home Stewardship Assessment (HSA) export. Use whenever an operator needs to turn a completed HSA into a client-ready HSP.
 ---
 
 # HSP Report Generator
 
-Turn a raw SafetyCulture **Home Safety Assessment (HSA)** export into the two
+Turn a raw SafetyCulture **Home Stewardship Assessment (HSA)** export into the two
 client-facing **Home Stewardship Plan (HSP)** deliverables for Bespoke Property
 Concierge:
 
