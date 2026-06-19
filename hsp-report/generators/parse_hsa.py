@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Parse a SafetyCulture Home Safety Assessment (HSA) Word export into the
+"""Parse a SafetyCulture Home Stewardship Assessment (HSA) Word export into the
 intermediate JSON consumed by build_docx.py and build_glossy.py.
 
 The HSA is the raw, internal field capture. This module performs the
