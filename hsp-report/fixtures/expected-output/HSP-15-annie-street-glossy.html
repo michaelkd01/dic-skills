@@ -1,0 +1,346 @@
+<!DOCTYPE html><html><head><meta charset="utf-8">
+<style>
+@font-face { font-family:'Aviano Serif'; src:url('file:///Users/michaeldavidson/Developer/dic-skills/hsp-report/assets/fonts/AvianoSerif-Light.otf'); font-weight:300; }
+@font-face { font-family:'Familjen Grotesk'; src:url('file:///Users/michaeldavidson/Developer/dic-skills/hsp-report/assets/fonts/FamiljenGrotesk-400.ttf'); font-weight:400; }
+@font-face { font-family:'Familjen Grotesk'; src:url('file:///Users/michaeldavidson/Developer/dic-skills/hsp-report/assets/fonts/FamiljenGrotesk-500.ttf'); font-weight:500; }
+@font-face { font-family:'Familjen Grotesk'; src:url('file:///Users/michaeldavidson/Developer/dic-skills/hsp-report/assets/fonts/FamiljenGrotesk-600.ttf'); font-weight:600; }
+@font-face { font-family:'Familjen Grotesk'; src:url('file:///Users/michaeldavidson/Developer/dic-skills/hsp-report/assets/fonts/FamiljenGrotesk-700.ttf'); font-weight:700; }
+
+@page { size: A4; margin: 0; }
+* { margin:0; padding:0; box-sizing:border-box; }
+html { font-family:'Familjen Grotesk', sans-serif; color:#181818; }
+
+.page { position:relative; width:210mm; height:297mm; overflow:hidden;
+        page-break-after:always; background:#F9F8F7; }
+.page:last-child { page-break-after:auto; }
+
+.display { font-family:'Aviano Serif'; font-weight:300; letter-spacing:-0.130em; line-height:1.08; }
+.kicker { font-weight:600; letter-spacing:0.22em; text-transform:uppercase; font-size:8.5pt; color:#987F6A; }
+.body { font-size:10.5pt; line-height:1.6; }
+
+/* --- charcoal cover / closing --- */
+.charcoal { background:#181818; color:#fff; }
+.charcoal .kicker { color:#D9D1C7; }
+.cover-inner { position:absolute; top:50%; left:24mm; right:24mm;
+                transform:translateY(-50%); text-align:center; }
+.cover-logo { width:84mm; margin:0 auto 16mm; display:block; }
+.cover-title { font-size:30pt; color:#fff; margin:6mm 0 8mm; }
+.cover-meta { font-size:11pt; color:#D9D1C7; line-height:1.9; }
+.rule { width:40mm; height:1px; background:#987F6A; margin:8mm auto; border:0; }
+
+/* --- content frame --- */
+.content { padding:22mm 24mm; }
+.brandbar { display:flex; align-items:center; justify-content:space-between; margin-bottom:14mm; }
+.brandbar img { height:9mm; }
+.brandbar .addr { font-size:8.5pt; color:#987F6A; letter-spacing:0.04em; text-align:right; }
+.h-display { font-size:26pt; margin:3mm 0 6mm; }
+.lead { font-size:11pt; line-height:1.7; margin-bottom:5mm; }
+.sig { font-weight:600; margin-top:7mm; }
+.sig-sub { color:#987F6A; font-size:9.5pt; }
+
+/* --- at a glance --- */
+.stats { display:flex; gap:5mm; margin:8mm 0; }
+.stat { flex:1; background:#fff; border:1px solid #D9D1C7; border-radius:2mm;
+         padding:7mm 4mm; text-align:center; }
+.stat .num { font-family:'Aviano Serif'; font-weight:300; letter-spacing:-0.06em; font-size:34pt; }
+.stat .lbl { font-size:8.5pt; color:#987F6A; margin-top:2mm; line-height:1.3; }
+
+/* --- section opener (photo + charcoal overlay) --- */
+.opener { position:relative; color:#fff; }
+.opener .bg { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+.opener .veil { position:absolute; inset:0;
+    background:linear-gradient(180deg, rgba(24,24,24,0.30) 0%, rgba(24,24,24,0.30) 55%, rgba(24,24,24,0.66) 100%); }
+.opener .cap { position:absolute; left:24mm; right:24mm; bottom:26mm; }
+.opener .num { font-family:'Aviano Serif'; font-weight:300; letter-spacing:-0.04em;
+                font-size:16pt; color:#D9D1C7; }
+.opener .ttl { font-family:'Aviano Serif'; font-weight:300; letter-spacing:-0.130em;
+                font-size:38pt; margin:3mm 0 4mm; }
+.opener .blurb { font-size:11.5pt; line-height:1.6; max-width:130mm; color:#f3efeb; }
+.opener .kicker { color:#D9D1C7; }
+
+/* --- item spreads --- */
+.items { padding:20mm 24mm; }
+.items-head { display:flex; align-items:baseline; justify-content:space-between;
+               border-bottom:1px solid #D9D1C7; padding-bottom:4mm; margin-bottom:6mm; }
+.items-head .h { font-family:'Aviano Serif'; font-weight:300; letter-spacing:-0.130em; font-size:20pt; }
+.item { break-inside:avoid; padding:5mm 0; border-bottom:1px solid #ece7e1; }
+.item:last-child { border-bottom:0; }
+.item .top { display:flex; align-items:baseline; justify-content:space-between; }
+.item .name { font-weight:600; font-size:12.5pt; }
+.item .tag { font-size:8pt; font-weight:600; letter-spacing:0.12em; text-transform:uppercase;
+              color:#987F6A; white-space:nowrap; padding-left:6mm; }
+.item .desc { font-size:10.5pt; line-height:1.55; margin-top:2mm; }
+.item .why { font-size:9.5pt; color:#987F6A; margin-top:2mm; }
+.item .why b { font-weight:600; letter-spacing:0.1em; text-transform:uppercase; font-size:8pt; }
+.empty { color:#987F6A; font-size:11pt; padding:6mm 0; }
+.note { color:#987F6A; font-size:9.5pt; margin-top:10mm; }
+</style></head><body>
+<div class="page charcoal">
+  <div class="cover-inner">
+    <img class="cover-logo" src="file:///Users/michaeldavidson/Developer/dic-skills/hsp-report/assets/brand/logo-white.png">
+    <div class="kicker">Home Stewardship Plan</div>
+    <div class="display cover-title">15 Annie Street, Hamilton, QLD 4007</div>
+    <hr class="rule">
+    <div class="cover-meta">Prepared for Craig Greenwood<br>Assessed 11 June 2026<br>Your Concierge · Aaron Holloway</div>
+  </div>
+</div>
+<div class="page">
+  <div class="content">
+    <div class="brandbar"><img src="file:///Users/michaeldavidson/Developer/dic-skills/hsp-report/assets/brand/logo-charcoal.png">
+      <div class="addr">15 Annie Street, Hamilton, QLD 4007<br>Annual assessment</div></div>
+    <div class="kicker">Introduction</div>
+    <div class="display h-display">Your Home Stewardship Plan</div>
+    <p class='lead'>Thank you for entrusting the care of your home to Bespoke. This Home Stewardship Plan sets out what we found during your assessment, what we recommend, and how we will see it through on your behalf.</p><p class='lead'>Your home presents as well cared for and structurally sound. Of the 126 elements we assessed, the great majority are in good order. We have identified a focused set of works — 19 in total — together with 15 items we will simply keep under watch.</p><p class='lead'>Every recommendation that follows is yours to approve at your discretion. Where works proceed, we coordinate each trade, oversee the quality to our standard, and report back to you on completion.</p>
+    <div class="sig">Aaron Holloway</div><div class="sig-sub">Your Concierge, Bespoke Property Concierge</div>
+    <div class="stats"><div class="stat"><div class="num">126</div><div class="lbl">elements assessed</div></div><div class="stat"><div class="num">81</div><div class="lbl">in satisfactory condition</div></div><div class="stat"><div class="num">19</div><div class="lbl">works recommended</div></div><div class="stat"><div class="num">15</div><div class="lbl">items to monitor</div></div></div>
+    <p class="body">Of the 126 elements we assessed, 81 are in satisfactory condition and require no action. Your home presents as well cared for and structurally sound.</p>
+  </div>
+</div>
+<div class="page opener">
+  <img class="bg" src="file:///Users/michaeldavidson/Developer/dic-skills/hsp-report/assets/imagery/drake-TWbpI0JTgRU-unsplash.jpg">
+  <div class="veil"></div>
+  <div class="cap">
+    <div class="kicker">Recommended works</div>
+    <div class="num">01</div>
+    <div class="ttl">Essential Repairs</div>
+    <div class="blurb">Immediate safety and repair items we recommend addressing first.</div>
+  </div>
+</div>
+<div class="page">
+  <div class="items">
+    <div class="items-head"><span class="h">Essential Repairs</span>
+      <span class="kicker">Home Stewardship Plan</span></div>
+    
+    <div class="item">
+      <div class="top"><span class="name">Roof drainage</span><span class="tag">Priority &nbsp;·&nbsp; By quotation</span></div>
+      <div class="desc">Clear and treat the surface corrosion in the box gutter and restore free drainage.</div>
+      <div class="why"><b>Why it matters</b> &nbsp; Free-flowing roof drainage protects the roof structure and prevents water entry during heavy rain.</div>
+    </div>
+    <div class="item">
+      <div class="top"><span class="name">Deck balustrade</span><span class="tag">Priority &nbsp;·&nbsp; By quotation</span></div>
+      <div class="desc">Re-fix the movement at the upper-deck balustrade posts to restore full rigidity.</div>
+      <div class="why"><b>Why it matters</b> &nbsp; A firm balustrade is an essential safeguard against falls.</div>
+    </div>
+    <div class="item">
+      <div class="top"><span class="name">Pool barrier compliance</span><span class="tag">Priority &nbsp;·&nbsp; By quotation</span></div>
+      <div class="desc">Adjust the self-closing pool gate and renew the faded safety signage so the barrier meets compliance.</div>
+      <div class="why"><b>Why it matters</b> &nbsp; A compliant pool barrier is a legal requirement and a vital safeguard for young children.</div>
+    </div>
+    <div class="item">
+      <div class="top"><span class="name">Subfloor timber</span><span class="tag">Priority &nbsp;·&nbsp; By quotation</span></div>
+      <div class="desc">Address the elevated moisture at the subfloor bearer and treat the affected timber.</div>
+      <div class="why"><b>Why it matters</b> &nbsp; Managing subfloor moisture protects the structural timbers that support your home.</div>
+    </div>
+    <div class="item">
+      <div class="top"><span class="name">Electrical safety</span><span class="tag">Priority &nbsp;·&nbsp; By quotation</span></div>
+      <div class="desc">Install RCD protection to the unprotected circuits and complete safety-switch testing across the board.</div>
+      <div class="why"><b>Why it matters</b> &nbsp; Modern safety switches protect your household from electric shock.</div>
+    </div>
+    <div class="item">
+      <div class="top"><span class="name">Smoke-alarm compliance</span><span class="tag">Priority &nbsp;·&nbsp; By quotation</span></div>
+      <div class="desc">Upgrade to interconnected photoelectric smoke alarms and confirm correct placement and coverage throughout the home.</div>
+      <div class="why"><b>Why it matters</b> &nbsp; Interconnected alarms give your household the earliest possible warning in the event of a fire.</div>
+    </div>
+  </div>
+</div>
+<div class="page opener">
+  <img class="bg" src="file:///Users/michaeldavidson/Developer/dic-skills/hsp-report/assets/imagery/alef-morais.jpg">
+  <div class="veil"></div>
+  <div class="cap">
+    <div class="kicker">Recommended works</div>
+    <div class="num">02</div>
+    <div class="ttl">Programmed Maintenance Schedule</div>
+    <div class="blurb">Ongoing, preventive care to keep your home performing at its best.</div>
+  </div>
+</div>
+<div class="page">
+  <div class="items">
+    <div class="items-head"><span class="h">Programmed Maintenance Schedule</span>
+      <span class="kicker">Home Stewardship Plan</span></div>
+    
+    <div class="item">
+      <div class="top"><span class="name">Site drainage</span><span class="tag">Programmed &nbsp;·&nbsp; By quotation</span></div>
+      <div class="desc">Regrade or install a channel drain to clear the low point that forms near the rear patio after rain.</div>
+      <div class="why"><b>Why it matters</b> &nbsp; Directing surface water away from the home protects the foundations and outdoor areas.</div>
+    </div>
+    <div class="item">
+      <div class="top"><span class="name">Roof covering</span><span class="tag">Programmed &nbsp;·&nbsp; By quotation</span></div>
+      <div class="desc">Re-secure the displaced ridge fasteners and renew the localised sealant.</div>
+      <div class="why"><b>Why it matters</b> &nbsp; A well-sealed roof is your home&#x27;s first defence against the weather.</div>
+    </div>
+    <div class="item">
+      <div class="top"><span class="name">Gutters &amp; downpipes</span><span class="tag">Programmed &nbsp;·&nbsp; By quotation</span></div>
+      <div class="desc">Clear debris from the gutter runs and re-secure the loose brackets.</div>
+      <div class="why"><b>Why it matters</b> &nbsp; Clear gutters carry water safely away and prevent overflow damage.</div>
+    </div>
+    <div class="item">
+      <div class="top"><span class="name">External render</span><span class="tag">Programmed &nbsp;·&nbsp; By quotation</span></div>
+      <div class="desc">Investigate the source of the hairline cracking, then patch and repaint the affected wall.</div>
+      <div class="why"><b>Why it matters</b> &nbsp; Sound render keeps moisture out and preserves the appearance of the facade.</div>
+    </div>
+    <div class="item">
+      <div class="top"><span class="name">Window seals</span><span class="tag">Programmed &nbsp;·&nbsp; By quotation</span></div>
+      <div class="desc">Replace the perished window seal and make good the affected reveal.</div>
+      <div class="why"><b>Why it matters</b> &nbsp; Intact seals keep the weather out and help your home stay comfortable and efficient.</div>
+    </div>
+    <div class="item">
+      <div class="top"><span class="name">Sliding door</span><span class="tag">Programmed &nbsp;·&nbsp; By quotation</span></div>
+      <div class="desc">Service the sliding-door track and rollers to restore smooth, effortless operation.</div>
+      <div class="why"><b>Why it matters</b> &nbsp; Well-maintained doors are easier to use and last considerably longer.</div>
+    </div>
+    <div class="item">
+      <div class="top"><span class="name">Deck coating</span><span class="tag">Programmed &nbsp;·&nbsp; By quotation</span></div>
+      <div class="desc">Clean and re-oil the weathered decking this season.</div>
+      <div class="why"><b>Why it matters</b> &nbsp; Regular oiling protects the timber and keeps the deck looking its best.</div>
+    </div>
+    <div class="item">
+      <div class="top"><span class="name">Path levelling</span><span class="tag">Programmed &nbsp;·&nbsp; By quotation</span></div>
+      <div class="desc">Grind back or replace the lifted path slab to remove the trip hazard at the side entry.</div>
+      <div class="why"><b>Why it matters</b> &nbsp; Even, level paths keep everyday movement around the home safe.</div>
+    </div>
+    <div class="item">
+      <div class="top"><span class="name">Subfloor ventilation</span><span class="tag">Programmed &nbsp;·&nbsp; By quotation</span></div>
+      <div class="desc">Clear the blocked subfloor vents to restore healthy cross-flow ventilation.</div>
+      <div class="why"><b>Why it matters</b> &nbsp; Good subfloor airflow keeps the timbers dry and the home healthy.</div>
+    </div>
+    <div class="item">
+      <div class="top"><span class="name">Shower waterproofing</span><span class="tag">Programmed &nbsp;·&nbsp; By quotation</span></div>
+      <div class="desc">Re-grout and reseal the shower to protect the waterproofing behind the tiles.</div>
+      <div class="why"><b>Why it matters</b> &nbsp; Sound waterproofing prevents hidden moisture damage in wet areas.</div>
+    </div>
+    <div class="item">
+      <div class="top"><span class="name">Bathroom ventilation</span><span class="tag">Programmed &nbsp;·&nbsp; By quotation</span></div>
+      <div class="desc">Service or replace the exhaust fan so it manages moisture effectively.</div>
+      <div class="why"><b>Why it matters</b> &nbsp; Good ventilation keeps wet areas dry and discourages mould.</div>
+    </div>
+    <div class="item">
+      <div class="top"><span class="name">Hot-water relief valve</span><span class="tag">Programmed &nbsp;·&nbsp; By quotation</span></div>
+      <div class="desc">Have a licensed plumber verify the temperature-relief valve and tundish arrangement.</div>
+      <div class="why"><b>Why it matters</b> &nbsp; A correctly functioning relief valve is an important safety feature of the hot-water system.</div>
+    </div>
+    <div class="item">
+      <div class="top"><span class="name">Air-conditioning filters</span><span class="tag">Programmed &nbsp;·&nbsp; By quotation</span></div>
+      <div class="desc">Clean or replace the air-conditioning filters.</div>
+      <div class="why"><b>Why it matters</b> &nbsp; Clean filters improve air quality and keep the system running efficiently.</div>
+    </div>
+  </div>
+</div>
+<div class="page opener">
+  <img class="bg" src="file:///Users/michaeldavidson/Developer/dic-skills/hsp-report/assets/imagery/HouseImg_JLeung_Unsplash.jpg">
+  <div class="veil"></div>
+  <div class="cap">
+    <div class="kicker">Recommended works</div>
+    <div class="num">03</div>
+    <div class="ttl">Enhancement Plan</div>
+    <div class="blurb">Considered improvements to elevate comfort, value and enjoyment.</div>
+  </div>
+</div>
+<div class="page">
+  <div class="items">
+    <div class="items-head"><span class="h">Enhancement Plan</span>
+      <span class="kicker">Home Stewardship Plan</span></div>
+    <div class="empty">No items at this time.</div>
+  </div>
+</div>
+<div class="page opener">
+  <img class="bg" src="file:///Users/michaeldavidson/Developer/dic-skills/hsp-report/assets/imagery/rhemakallianpur.jpg">
+  <div class="veil"></div>
+  <div class="cap">
+    <div class="kicker">Under watch</div>
+    <div class="num">04</div>
+    <div class="ttl">Items to Monitor</div>
+    <div class="blurb">These items need no action today. We note them so nothing escapes attention, and review each at your next assessment.</div>
+  </div>
+</div>
+<div class="page">
+  <div class="items">
+    <div class="items-head"><span class="h">Items to Monitor</span>
+      <span class="kicker">Home Stewardship Plan</span></div>
+    
+    <div class="item">
+      <div class="top"><span class="name">Boundary trees</span><span class="tag">Monitor</span></div>
+      <div class="desc">A large tree overhangs the roofline; an arborist review is recommended within the coming months.</div>
+      <div class="why"><b>Why it matters</b> &nbsp; No action is needed today; we will review this at your next assessment.</div>
+    </div>
+    <div class="item">
+      <div class="top"><span class="name">Roof flashings</span><span class="tag">Monitor</span></div>
+      <div class="desc">The flue flashing is sound but ageing; we will review it at the next assessment.</div>
+      <div class="why"><b>Why it matters</b> &nbsp; No action is needed today; we will review this at your next assessment.</div>
+    </div>
+    <div class="item">
+      <div class="top"><span class="name">External paint</span><span class="tag">Monitor</span></div>
+      <div class="desc">The west elevation is beginning to chalk; a full repaint is likely within twelve to eighteen months.</div>
+      <div class="why"><b>Why it matters</b> &nbsp; No action is needed today; we will review this at your next assessment.</div>
+    </div>
+    <div class="item">
+      <div class="top"><span class="name">Door hardware</span><span class="tag">Monitor</span></div>
+      <div class="desc">Early coastal corrosion is appearing on external hardware; we are keeping it under watch.</div>
+      <div class="why"><b>Why it matters</b> &nbsp; No action is needed today; we will review this at your next assessment.</div>
+    </div>
+    <div class="item">
+      <div class="top"><span class="name">Decking boards</span><span class="tag">Monitor</span></div>
+      <div class="desc">Two boards are cupping near the drip line and will be re-fixed as required.</div>
+      <div class="why"><b>Why it matters</b> &nbsp; No action is needed today; we will review this at your next assessment.</div>
+    </div>
+    <div class="item">
+      <div class="top"><span class="name">Driveway cracking</span><span class="tag">Monitor</span></div>
+      <div class="desc">Cosmetic map-cracking to the driveway; no action is needed at this stage.</div>
+      <div class="why"><b>Why it matters</b> &nbsp; No action is needed today; we will review this at your next assessment.</div>
+    </div>
+    <div class="item">
+      <div class="top"><span class="name">Retaining wall</span><span class="tag">Monitor</span></div>
+      <div class="desc">A slight lean to the rear retaining wall, with weep holes clear; we will monitor for any progression.</div>
+      <div class="why"><b>Why it matters</b> &nbsp; No action is needed today; we will review this at your next assessment.</div>
+    </div>
+    <div class="item">
+      <div class="top"><span class="name">Pool waterline tiling</span><span class="tag">Monitor</span></div>
+      <div class="desc">Minor tile lifting at the waterline, which we will keep under observation.</div>
+      <div class="why"><b>Why it matters</b> &nbsp; No action is needed today; we will review this at your next assessment.</div>
+    </div>
+    <div class="item">
+      <div class="top"><span class="name">Floor level</span><span class="tag">Monitor</span></div>
+      <div class="desc">A slight deflection to the rear bedroom floor, noted for review.</div>
+      <div class="why"><b>Why it matters</b> &nbsp; No action is needed today; we will review this at your next assessment.</div>
+    </div>
+    <div class="item">
+      <div class="top"><span class="name">Ceiling finish</span><span class="tag">Monitor</span></div>
+      <div class="desc">A faint historic stain to the laundry ceiling, currently dry and stable.</div>
+      <div class="why"><b>Why it matters</b> &nbsp; No action is needed today; we will review this at your next assessment.</div>
+    </div>
+    <div class="item">
+      <div class="top"><span class="name">Timber flooring</span><span class="tag">Monitor</span></div>
+      <div class="desc">Minor seasonal gapping to the entry boards, which typically closes with humidity.</div>
+      <div class="why"><b>Why it matters</b> &nbsp; No action is needed today; we will review this at your next assessment.</div>
+    </div>
+    <div class="item">
+      <div class="top"><span class="name">Kitchen appliance seal</span><span class="tag">Monitor</span></div>
+      <div class="desc">Minor staining under the dishwasher, currently dry; we will monitor the seal.</div>
+      <div class="why"><b>Why it matters</b> &nbsp; No action is needed today; we will review this at your next assessment.</div>
+    </div>
+    <div class="item">
+      <div class="top"><span class="name">Wet-area ventilation</span><span class="tag">Monitor</span></div>
+      <div class="desc">Early spotting to a bathroom ceiling; improving ventilation will keep it in check.</div>
+      <div class="why"><b>Why it matters</b> &nbsp; No action is needed today; we will review this at your next assessment.</div>
+    </div>
+    <div class="item">
+      <div class="top"><span class="name">Hot-water system</span><span class="tag">Monitor</span></div>
+      <div class="desc">The hot-water system is operating well at around nine years; we recommend planning for replacement within its service cycle.</div>
+      <div class="why"><b>Why it matters</b> &nbsp; No action is needed today; we will review this at your next assessment.</div>
+    </div>
+    <div class="item">
+      <div class="top"><span class="name">External lighting</span><span class="tag">Monitor</span></div>
+      <div class="desc">Two external fittings show water marking and will be reviewed or replaced as needed.</div>
+      <div class="why"><b>Why it matters</b> &nbsp; No action is needed today; we will review this at your next assessment.</div>
+    </div>
+  </div>
+</div>
+<div class="page charcoal">
+  <div class="cover-inner">
+    <img class="cover-logo" src="file:///Users/michaeldavidson/Developer/dic-skills/hsp-report/assets/brand/logo-white.png">
+    <div class="kicker">Your Concierge</div>
+    <div class="display cover-title">Your home is in<br>careful hands.</div>
+    <hr class="rule">
+    <div class="cover-meta">Bespoke Property Concierge  ·  concierge@bespokepropertyconcierge.com.au<br>
+      Meticulous care for homes that deserve perfection.</div>
+  </div>
+</div></body></html>
