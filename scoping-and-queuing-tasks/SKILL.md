@@ -51,6 +51,7 @@ Before scoping or producing a prompt, ALWAYS fetch project context. Read in this
 2. **Architecture & Decisions** ... Obsidian first (`wiki/projects/{slug}/architecture/`, `wiki/decisions/`); Notion PROJECT DOCS as fallback (search `{ProjectCode} ... Architecture & Decisions`)
 3. **Overview** ... Obsidian first; Notion PROJECT DOCS as fallback (search `{ProjectCode} ... Overview`)
 4. **Repo CLAUDE.md** ... if the task involves code, read it from project knowledge or the local repo
+5. **In-flight sibling check (code tasks)** ... if this task touches specific files, check whether any other open / unmerged Linear issue touches the same files. Sibling issues' `**Concurrency: EXCLUSIVE**` notes name the shared files; cross-check GitHub for unmerged branches / PRs against those paths. Any sibling found changes what "current source" means for the next step.
 
 Read enough to understand:
 - Current architecture and constraints
@@ -68,6 +69,7 @@ Review existing AC (or draft new AC) against:
 - [ ] No criterion is ambiguous ("improve performance" is bad; "reduce query time from 2s to <500ms" is good)
 - [ ] Criteria reference specific files or modules where possible
 - [ ] Criteria do not contradict the project's Architecture & Decisions
+- [ ] No unmerged sibling issue rewrites the files this AC names. If one does, scope the AC against that sibling's **post-merge** end-state, not the current snapshot ... or add the sibling as a `blockedBy` so this issue cannot be queued until it lands.
 
 If AC needs changes, propose them and get confirmation before proceeding.
 
@@ -214,6 +216,7 @@ For projects with explicit deploy hooks, the project's Architecture & Decisions 
 - Setting state to `Todo` before AC and test spec are validated (Cyrus may pick up incomplete work)
 - Approving a test spec that only covers happy paths (edge cases catch most bugs)
 - Forgetting to apply scope labels (Bespoke specifically uses `bespoke-portal` / `bespoke-website` / `bespoke-api` for routing)
+- **Scoping AC against stale source while a sibling rewrites the same files.** Writing criteria against the current source when another unmerged issue will change those files produces ACs that name components the sibling deletes. The EXCLUSIVE concurrency lock serialises execution but does nothing for scope currency. (BES-170/199: 199's ACs targeted `QuoteApproval` in `ActionPlan.tsx`; BES-170 deleted it 24 min later. 199 even documented the shared-file dependency, yet the ACs still assumed the pre-170 surface.)
 - **Specifying the base branch in prompt prose** ("branch from main", "create a branch off staging"). Cyrus resolves the base from `repositories[].baseBranch` in `~/.cyrus/config.json`; contradicting it in prose triggers recovery loops (see ANY-230 incident documented in SOC-18). Use `[repo=name#branch]` in the Linear description for explicit overrides instead. See `writing-execution-prompts` → Base Branch.
 - **Queuing a ticket that another queued or in-flight ticket supersedes** (e.g. polishing a surface a structural ticket is about to delete). Run the Step 1 supersession check; cancel or hold the subordinate ticket. See BES-189 / BES-170.
 - **Scoping a structural removal without a reference sweep in the AC**, leaving dangling links or imports to the removed route or component. See Step 3.6 and the BES-170 / BES-203 straggler.
