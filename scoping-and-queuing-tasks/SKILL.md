@@ -36,6 +36,13 @@ Determine whether this is an existing issue or a new one.
 2. Determine the target team and any scope labels
 3. Skip to Step 4 (Create Issue)
 
+**Supersession check (both paths) ... run before creating or queuing:**
+
+Check whether another in-flight, queued, or recently-merged ticket changes the SAME surface in a way that makes this one moot. If a structural ticket will remove, rename, or replace the route / page / component this ticket targets, that structural ticket supersedes the polish or feature ticket sitting on top of it.
+
+- If a superseding structural ticket exists, cancel or hold the subordinate ticket (`save_comment` rationale, then `save_issue` -> `Canceled`) rather than running both. Never queue a redesign of a surface that another queued ticket is about to delete.
+- Incident: BES-189 redesigned the action-plan detail view; BES-170 deleted that detail view 48 minutes later. Both ran, so the BES-189 work was merged then thrown away ... wasted execution because the supersession was not caught at scoping.
+
 ### Step 2 ... Gather Project Context
 
 Before scoping or producing a prompt, ALWAYS fetch project context. Read in this order:
@@ -108,6 +115,18 @@ If AC needs changes, propose them and get confirmation before proceeding.
 Command: {from CLAUDE.md}
 Coverage target: all new/modified code paths
 ```
+
+### Step 3.6 ... Structural-Removal Sweep
+
+**Applies to:** any task that removes, renames, or relocates a cross-referenced surface ... a route, page, exported component or hook, public function, env binding, or URL path that other modules reference.
+
+A structural removal is not done when the target is deleted; it is done when every reference to it is updated or removed. Bake the sweep into the AC so the executor cannot leave a dangling reference:
+
+- [ ] AC includes a repo-wide reference sweep for the removed symbol / route / path (e.g. `grep -rn "/old-route/" src/`, plus import sites and route declarations), updating or removing every hit.
+- [ ] AC includes a dangling-reference guard ... a unit test or a grep step asserting zero references to the removed surface remain after the change.
+- [ ] The sweep covers sibling surfaces, not just the file being edited. Updating one linker while missing another is the exact failure mode this step exists to prevent.
+
+Incident: BES-170 removed the `/action-plan/:quoteId` route and updated the Dashboard linker but missed `Property.tsx`, shipping a dead link to the client portal (fixed in BES-203). The removal AC should have required the sweep.
 
 ### Step 4 ... Create or Update the Issue in Linear
 
@@ -196,6 +215,8 @@ For projects with explicit deploy hooks, the project's Architecture & Decisions 
 - Approving a test spec that only covers happy paths (edge cases catch most bugs)
 - Forgetting to apply scope labels (Bespoke specifically uses `bespoke-portal` / `bespoke-website` / `bespoke-api` for routing)
 - **Specifying the base branch in prompt prose** ("branch from main", "create a branch off staging"). Cyrus resolves the base from `repositories[].baseBranch` in `~/.cyrus/config.json`; contradicting it in prose triggers recovery loops (see ANY-230 incident documented in SOC-18). Use `[repo=name#branch]` in the Linear description for explicit overrides instead. See `writing-execution-prompts` → Base Branch.
+- **Queuing a ticket that another queued or in-flight ticket supersedes** (e.g. polishing a surface a structural ticket is about to delete). Run the Step 1 supersession check; cancel or hold the subordinate ticket. See BES-189 / BES-170.
+- **Scoping a structural removal without a reference sweep in the AC**, leaving dangling links or imports to the removed route or component. See Step 3.6 and the BES-170 / BES-203 straggler.
 
 ## See Also
 
