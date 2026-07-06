@@ -130,6 +130,16 @@ A structural removal is not done when the target is deleted; it is done when eve
 
 Incident: BES-170 removed the `/action-plan/:quoteId` route and updated the Dashboard linker but missed `Property.tsx`, shipping a dead link to the client portal (fixed in BES-203). The removal AC should have required the sweep.
 
+### Step 3.7 ... Rendering-Verification Gate (verify:device)
+
+**Applies to:** any task, in ANY project, whose change can alter what a real user sees or whether content renders at all. Triggers include: CSS cascade / specificity / visibility / animation-state changes; JS load-order or bootstrapping changes (inline → external, defer/async, class-hook gating); CSP or security-header changes that affect script or style execution; font loading; viewport or responsive layout changes.
+
+Grep and unit assertions structurally cannot detect rendering failures. Green CI has shipped the same blank-site failure class twice on one repo: 817d339 (CSP hash drift, ~2.5 weeks blank in production) and the BES-205 first pass (hidden rule `html.js [data-reveal]` at specificity (0,2,1) outranked the `.is-visible` reveal rule at (0,2,0), locking all revealed content invisible ... caught only at Supervisor review).
+
+- [ ] Apply the workspace `verify:device` label at scoping time when any trigger matches. The label gates Supervisor PASS per the Feature Verification Standard ADR: web → BrowserStack Live or an evidenced real-browser session; native iOS → owned device + TestFlight.
+- [ ] The AC must require reported browser evidence, not just green CI: (a) the runtime state is applied (e.g., bootstrap/state classes present in the live DOM), (b) the visual outcome actually occurs (content renders / reveals), and (c) the failure-mode fallback holds (e.g., content visible with JS disabled; reduced-motion behaviour).
+- [ ] The test spec may remain grep/unit based, but must never be represented as proving rendering. State that gap explicitly in the spec so the Supervisor knows CI-green is not render-green.
+
 ### Step 4 ... Create or Update the Issue in Linear
 
 Use `Linear:save_issue` with these inputs:
@@ -139,7 +149,7 @@ Use `Linear:save_issue` with these inputs:
 | title | Descriptive, imperative form |
 | team | Linear team key (e.g., `anytimeinterview2`) |
 | description | Includes AC + test spec + any context (see body convention below) |
-| labels | Apply relevant team labels (`Feature`, `Improvement`, `Bug`) plus scope labels where applicable (e.g., `bespoke-portal`) |
+| labels | Apply relevant team labels (`Feature`, `Improvement`, `Bug`) plus scope labels where applicable (e.g., `bespoke-portal`), plus `verify:device` when Step 3.7 triggers |
 | priority | `1 Urgent` / `2 High` / `3 Medium` / `4 Low` (or `0 None`) |
 | assignee | Cyrus agent (when ready for execution) or self (if planning still ongoing) |
 | state | See decision rules below |
@@ -220,6 +230,7 @@ For projects with explicit deploy hooks, the project's Architecture & Decisions 
 - **Specifying the base branch in prompt prose** ("branch from main", "create a branch off staging"). Cyrus resolves the base from `repositories[].baseBranch` in `~/.cyrus/config.json`; contradicting it in prose triggers recovery loops (see ANY-230 incident documented in SOC-18). Use `[repo=name#branch]` in the Linear description for explicit overrides instead. See `writing-execution-prompts` → Base Branch.
 - **Queuing a ticket that another queued or in-flight ticket supersedes** (e.g. polishing a surface a structural ticket is about to delete). Run the Step 1 supersession check; cancel or hold the subordinate ticket. See BES-189 / BES-170.
 - **Scoping a structural removal without a reference sweep in the AC**, leaving dangling links or imports to the removed route or component. See Step 3.6 and the BES-170 / BES-203 straggler.
+- **Scoping a rendering-critical change without the `verify:device` label**, letting grep-only CI stand in for visual verification. Green CI shipped the identical blank-production-site failure class twice (817d339; BES-205 first pass). See Step 3.7.
 
 ## See Also
 

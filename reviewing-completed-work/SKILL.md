@@ -147,6 +147,18 @@ If the issue had an approved test spec (Step 3.5), verify:
 
 If test assertions were modified from the approved spec without justification, this is a **FIX-MAJOR** regardless of whether other AC items pass. The test contract is binding.
 
+### B3.6. Rendering-Verification Gate (verify:device)
+
+Applies when the issue carries the `verify:device` label ... OR when the diff touches CSS cascade/visibility rules, JS load order or bootstrapping, or CSP/security headers, regardless of label (the label may have been missed at scoping; the gate still applies).
+
+PASS additionally requires real-browser or real-device evidence, either reported in the run output or gathered by the Supervisor directly:
+
+- [ ] Runtime state applied ... bootstrap/state classes present in the live DOM (e.g., `html.js`, `is-visible`)
+- [ ] Visual outcome confirmed ... content actually renders/reveals; never inferred from green grep assertions
+- [ ] Failure-mode fallback confirmed ... e.g., JS-disabled render, reduced-motion behaviour
+
+Green CI is necessary but never sufficient for these changes. Missing evidence caps the verdict at PARTIAL / FIX-MINOR pending verification (BrowserStack Live for web; owned device + TestFlight for iOS, per the Feature Verification Standard ADR). Incident basis: 817d339 and the BES-205 first pass both carried green CI while the rendered site was (or would have been) blank.
+
 ### B4. Check for Drift
 
 Beyond the AC, verify:
@@ -253,6 +265,7 @@ For projects with explicit deploy hooks, the project's Architecture & Decisions 
 - Accepting "no tests written" when the AC includes test expectations
 - Accepting modified test assertions without flagging (test contract violation)
 - Issuing PASS on a Code task where no CI output is visible
+- Issuing PASS on a `verify:device` (or rendering-critical) change without real-browser/device evidence ... grep-green is not render-green (817d339; BES-205 first pass)
 
 ## Handback Audit (MANDATORY final output)
 
