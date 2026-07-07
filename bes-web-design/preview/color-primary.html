@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<!-- @dsCard group="Colors" name="Primary Palette" subtitle="Charcoal · White · Pastel" viewport="700x200" --><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  html,body{margin:0;background:#fff;font-family:var(--bpc-font-sans);}
+  body{padding:22px 26px;box-sizing:border-box;color:#181818;}
+  .eyebrow{font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:#747474;font-weight:500;margin-bottom:14px;}
+  .row{display:grid;grid-template-columns:1fr 1fr 1.4fr;gap:18px;}
+  .col{display:flex;flex-direction:column;gap:0;}
+  .block{position:relative;color:#fff;padding:14px 14px 10px;display:flex;flex-direction:column;justify-content:space-between;}
+  .block .name{font-size:11px;font-weight:700;letter-spacing:0.06em;}
+  .block .meta{font-family:ui-monospace,Menlo,monospace;font-size:9px;line-height:1.45;opacity:0.92;margin-top:4px;}
+  .block.dark{background:#181818;height:180px;}
+  .block.pastel{background:#F9F8F7;color:#181818;border:1px solid rgba(24,24,24,0.08);height:130px;}
+  .block.white{background:#FFFFFF;color:#181818;border:1px solid rgba(24,24,24,0.12);height:100px;}
+  .tints{display:flex;flex-direction:column;}
+  .tint{height:16px;display:flex;align-items:center;justify-content:flex-end;padding:0 8px;font-size:9px;font-family:ui-monospace,Menlo,monospace;color:rgba(255,255,255,0.9);}
+  .tint.light{color:#181818;}
+</style></head><body>
+<div class="eyebrow">03 · Brand Palette — Primary</div>
+<div class="row">
+  <div class="col">
+    <div class="block dark">
+      <div>
+        <div class="name">CHARCOAL</div>
+        <div class="meta">#181818<br>C71 M64 Y64 K80<br>R24 G24 B24<br>PANTONE 19-3911 TCX</div>
+      </div>
+    </div>
+    <div class="tints">
+      <div class="tint" style="background:#464646;">80%</div>
+      <div class="tint" style="background:#747474;">60%</div>
+      <div class="tint light" style="background:#a3a3a3;">40%</div>
+      <div class="tint light" style="background:#d1d1d1;">20%</div>
+    </div>
+  </div>
+  <div class="col">
+    <div class="block white">
+      <div>
+        <div class="name">WHITE</div>
+        <div class="meta" style="opacity:0.72;">#FFFFFF<br>C0 M0 Y0 K0<br>R255 G255 B255<br>PANTONE 11-0601 TCX</div>
+      </div>
+    </div>
+  </div>
+  <div class="col">
+    <div class="block pastel">
+      <div>
+        <div class="name">PASTEL</div>
+        <div class="meta" style="opacity:0.72;">#F9F8F7 · C1.53 M1.26 Y1.51 K0 · R249 G248 B247 · PANTONE 11-4101 TCX</div>
+      </div>
+    </div>
+    <div class="tints">
+      <div class="tint light" style="background:#e6e4e2;">80%</div>
+      <div class="tint light" style="background:#eeece9;">60%</div>
+      <div class="tint light" style="background:#f4f2f0;">40%</div>
+      <div class="tint light" style="background:#f8f7f5;">20%</div>
+    </div>
+  </div>
+</div>
+</body></html>

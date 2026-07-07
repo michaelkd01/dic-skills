@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<!-- @dsCard group="Colors" name="Semantic Tokens" subtitle="fg/bg/border CSS vars" viewport="700x220" --><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  html,body{margin:0;background:var(--bpc-bg-1);font-family:var(--bpc-font-sans);}
+  body{padding:22px 28px;box-sizing:border-box;}
+  .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+  .row{display:flex;align-items:center;gap:10px;}
+  .sw{width:28px;height:28px;border-radius:2px;border:1px solid var(--bpc-border-hairline);flex-shrink:0;}
+  .info{display:flex;flex-direction:column;}
+  .tok{font-size:11px;font-family:ui-monospace,Menlo,monospace;color:var(--bpc-fg-1);}
+  .use{font-size:10px;color:var(--bpc-fg-3);}
+</style></head><body>
+<div class="grid">
+  <div class="row"><div class="sw" style="background:#181818;"></div><div class="info"><span class="tok">--bpc-fg-1</span><span class="use">Primary text</span></div></div>
+  <div class="row"><div class="sw" style="background:#464646;"></div><div class="info"><span class="tok">--bpc-fg-2</span><span class="use">Body secondary</span></div></div>
+  <div class="row"><div class="sw" style="background:#747474;"></div><div class="info"><span class="tok">--bpc-fg-3</span><span class="use">Muted · meta</span></div></div>
+  <div class="row"><div class="sw" style="background:#F9F8F7;"></div><div class="info"><span class="tok">--bpc-fg-inverse</span><span class="use">On dark</span></div></div>
+  <div class="row"><div class="sw" style="background:#F9F8F7;"></div><div class="info"><span class="tok">--bpc-bg-1</span><span class="use">Default surface</span></div></div>
+  <div class="row"><div class="sw" style="background:#FFFFFF;"></div><div class="info"><span class="tok">--bpc-bg-2</span><span class="use">Elevated / card</span></div></div>
+  <div class="row"><div class="sw" style="background:#f7f6f3;"></div><div class="info"><span class="tok">--bpc-bg-3</span><span class="use">Subtle warm tint</span></div></div>
+  <div class="row"><div class="sw" style="background:#181818;"></div><div class="info"><span class="tok">--bpc-bg-dark</span><span class="use">Dark surface</span></div></div>
+  <div class="row"><div class="sw" style="background:#d9d1c7;"></div><div class="info"><span class="tok">--bpc-bg-accent</span><span class="use">Warm accent</span></div></div>
+  <div class="row"><div class="sw" style="border-color:rgba(24,24,24,0.12);background:transparent;"></div><div class="info"><span class="tok">--border-hairline</span><span class="use">1px @ 12% α</span></div></div>
+  <div class="row"><div class="sw" style="border-color:rgba(24,24,24,0.22);background:transparent;"></div><div class="info"><span class="tok">--border-subtle</span><span class="use">1px @ 22% α</span></div></div>
+  <div class="row"><div class="sw" style="background:#181818;"></div><div class="info"><span class="tok">--border-strong</span><span class="use">Charcoal 100</span></div></div>
+</div>
+</body></html>

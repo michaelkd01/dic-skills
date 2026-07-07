@@ -1,0 +1,43 @@
+/* =========================================================================
+   BPC — Webfonts
+   Familjen Grotesk (variable, workhorse) + Aviano Serif (unicase display).
+   Aviano Serif is a commercial license — confirm web-embed rights before
+   deploying the .otf binaries to a public site.
+   ========================================================================= */
+
+@font-face {
+  font-family: 'Familjen Grotesk';
+  src: url('../fonts/FamiljenGrotesk-VariableFont_wght.ttf') format('truetype-variations'),
+       url('../fonts/FamiljenGrotesk-VariableFont_wght.ttf') format('truetype');
+  font-weight: 400 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Familjen Grotesk';
+  src: url('../fonts/FamiljenGrotesk-Italic-VariableFont_wght.ttf') format('truetype-variations'),
+       url('../fonts/FamiljenGrotesk-Italic-VariableFont_wght.ttf') format('truetype');
+  font-weight: 400 700;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Aviano Serif';
+  src: url('../fonts/AvianoSerif-Light.otf') format('opentype');
+  font-weight: 300; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: 'Aviano Serif';
+  src: url('../fonts/AvianoSerif-Regular.otf') format('opentype');
+  font-weight: 400; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: 'Aviano Serif';
+  src: url('../fonts/AvianoSerif-Bold.otf') format('opentype');
+  font-weight: 700; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: 'Aviano Serif';
+  src: url('../fonts/AvianoSerif-Black.otf') format('opentype');
+  font-weight: 900; font-style: normal; font-display: swap;
+}

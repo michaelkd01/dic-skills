@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<!-- @dsCard group="Colors" name="Tonal Ramps" subtitle="100/80/60/40/20 for each brand color" viewport="700x320" --><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  html,body{margin:0;background:var(--bpc-bg-1);font-family:var(--bpc-font-sans);}
+  body{padding:22px 28px;box-sizing:border-box;}
+  .row{display:flex;flex-direction:column;gap:14px;}
+  .ramp{display:flex;gap:0;border:1px solid var(--bpc-border-hairline);border-radius:2px;overflow:hidden;}
+  .step{flex:1;height:44px;display:flex;align-items:flex-end;padding:4px 6px;font-size:9px;color:rgba(255,255,255,0.9);font-family:ui-monospace,Menlo,monospace;}
+  .label{font-size:11px;font-weight:500;margin-bottom:4px;display:flex;justify-content:space-between;}
+  .label span:last-child{color:var(--bpc-fg-3);font-weight:400;font-family:ui-monospace,Menlo,monospace;}
+</style></head><body>
+<div class="row">
+  <div>
+    <div class="label"><span>Charcoal</span><span>100 / 80 / 60 / 40 / 20</span></div>
+    <div class="ramp">
+      <div class="step" style="background:#181818;">100</div>
+      <div class="step" style="background:#464646;">80</div>
+      <div class="step" style="background:#747474;">60</div>
+      <div class="step" style="background:#a3a3a3;color:#222;">40</div>
+      <div class="step" style="background:#d1d1d1;color:#222;">20</div>
+    </div>
+  </div>
+  <div>
+    <div class="label"><span>Espresso</span><span>100 / 80 / 60 / 40 / 20</span></div>
+    <div class="ramp">
+      <div class="step" style="background:#3a2f2b;">100</div>
+      <div class="step" style="background:#61544f;">80</div>
+      <div class="step" style="background:#887a73;">60</div>
+      <div class="step" style="background:#b0a49e;color:#222;">40</div>
+      <div class="step" style="background:#d7d1ce;color:#222;">20</div>
+    </div>
+  </div>
+  <div>
+    <div class="label"><span>Latte</span><span>100 / 80 / 60 / 40 / 20</span></div>
+    <div class="ramp">
+      <div class="step" style="background:#987f6a;">100</div>
+      <div class="step" style="background:#ad9988;">80</div>
+      <div class="step" style="background:#c1b2a6;color:#222;">60</div>
+      <div class="step" style="background:#d6ccc3;color:#222;">40</div>
+      <div class="step" style="background:#eae5e1;color:#222;">20</div>
+    </div>
+  </div>
+  <div>
+    <div class="label"><span>Oat</span><span>100 / 80 / 60 / 40 / 20</span></div>
+    <div class="ramp">
+      <div class="step" style="background:#d9d1c7;color:#222;">100</div>
+      <div class="step" style="background:#e1dad1;color:#222;">80</div>
+      <div class="step" style="background:#e8e3dc;color:#222;">60</div>
+      <div class="step" style="background:#f0ede8;color:#222;">40</div>
+      <div class="step" style="background:#f7f6f3;color:#222;">20</div>
+    </div>
+  </div>
+</div>
+</body></html>

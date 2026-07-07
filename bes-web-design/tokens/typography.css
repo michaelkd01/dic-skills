@@ -1,0 +1,124 @@
+/* =========================================================================
+   BPC — Typography tokens + element base styles
+   Two-family system: Familjen Grotesk (workhorse) + Aviano Serif (unicase
+   display only, kept BIG). Aviano Serif needs kerning -130 (≈ -0.01em) and
+   text-transform: uppercase because it is a unicase typeface.
+   ========================================================================= */
+:root {
+  --bpc-font-sans: 'Familjen Grotesk', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --bpc-font-serif: 'Aviano Serif', 'Trajan Pro', 'Cormorant Garamond', Georgia, serif;
+
+  /* Weights */
+  --bpc-fw-regular: 400; /* @kind font */
+  --bpc-fw-medium: 500; /* @kind font */
+  --bpc-fw-semibold: 600; /* @kind font */
+  --bpc-fw-bold: 700; /* @kind font */
+  --bpc-fw-aviano-light: 300; /* @kind font */
+  --bpc-fw-aviano-regular: 400; /* @kind font */
+
+  /* Size scale (desktop) */
+  --bpc-fs-display: 72px;
+  --bpc-fs-h1: 56px;
+  --bpc-fs-h2: 40px;
+  --bpc-fs-h3: 28px;
+  --bpc-fs-h4: 20px;
+  --bpc-fs-body-lg: 18px;
+  --bpc-fs-body: 16px;
+  --bpc-fs-body-sm: 14px;
+  --bpc-fs-caption: 12px;
+  --bpc-fs-eyebrow: 11px;
+
+  /* Line heights */
+  --bpc-lh-display: 1.04; /* @kind font */
+  --bpc-lh-heading: 1.12; /* @kind font */
+  --bpc-lh-body: 1.55; /* @kind font */
+  --bpc-lh-tight: 1.2; /* @kind font */
+
+  /* Tracking */
+  --bpc-ls-aviano: -0.01em; /* @kind font */  /* Aviano kerning -130 */
+  --bpc-ls-eyebrow: 0.18em; /* @kind font */
+  --bpc-ls-label: 0.08em; /* @kind font */
+  --bpc-ls-body: 0; /* @kind font */
+}
+
+/* ----- Element semantics ------------------------------------------------ */
+html, body {
+  background: var(--bpc-bg-1);
+  color: var(--bpc-fg-1);
+  font-family: var(--bpc-font-sans);
+  font-size: var(--bpc-fs-body);
+  line-height: var(--bpc-lh-body);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Aviano Serif is UNICASE — keep content uppercase when used, and BIG */
+.bpc-display {
+  font-family: var(--bpc-font-serif);
+  font-weight: var(--bpc-fw-aviano-light);
+  letter-spacing: var(--bpc-ls-aviano);
+  text-transform: uppercase;
+  line-height: var(--bpc-lh-display);
+  font-size: var(--bpc-fs-display);
+}
+
+h1, .bpc-h1 {
+  font-family: var(--bpc-font-sans);
+  font-weight: var(--bpc-fw-bold);
+  font-size: var(--bpc-fs-h1);
+  line-height: var(--bpc-lh-heading);
+  letter-spacing: -0.015em;
+  margin: 0;
+}
+h2, .bpc-h2 {
+  font-family: var(--bpc-font-sans);
+  font-weight: var(--bpc-fw-semibold);
+  font-size: var(--bpc-fs-h2);
+  line-height: var(--bpc-lh-heading);
+  letter-spacing: -0.012em;
+  margin: 0;
+}
+h3, .bpc-h3 {
+  font-family: var(--bpc-font-sans);
+  font-weight: var(--bpc-fw-semibold);
+  font-size: var(--bpc-fs-h3);
+  line-height: var(--bpc-lh-tight);
+  margin: 0;
+}
+h4, .bpc-h4 {
+  font-family: var(--bpc-font-sans);
+  font-weight: var(--bpc-fw-medium);
+  font-size: var(--bpc-fs-h4);
+  line-height: var(--bpc-lh-tight);
+  margin: 0;
+}
+p, .bpc-body {
+  font-family: var(--bpc-font-sans);
+  font-weight: var(--bpc-fw-regular);
+  font-size: var(--bpc-fs-body);
+  line-height: var(--bpc-lh-body);
+  color: var(--bpc-fg-2);
+}
+
+.bpc-eyebrow {
+  font-family: var(--bpc-font-sans);
+  font-weight: var(--bpc-fw-medium);
+  font-size: var(--bpc-fs-eyebrow);
+  letter-spacing: var(--bpc-ls-eyebrow);
+  text-transform: uppercase;
+  color: var(--bpc-fg-3);
+}
+
+.bpc-caption {
+  font-family: var(--bpc-font-sans);
+  font-size: var(--bpc-fs-caption);
+  color: var(--bpc-fg-3);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+  border-bottom: 1px solid currentColor;
+  transition: opacity var(--bpc-duration-fast, 160ms) var(--bpc-ease-standard, ease);
+}
+a:hover { opacity: 0.6; }

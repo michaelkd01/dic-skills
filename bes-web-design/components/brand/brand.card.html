@@ -1,0 +1,43 @@
+<!-- @dsCard group="Components" name="Logo" subtitle="Lockup · horizontal · iso · box · colourways" viewport="700x240" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<link rel="stylesheet" href="../../styles.css" />
+<style>
+  html, body { margin: 0; background: var(--bpc-bg-1); }
+  body { padding: 28px; box-sizing: border-box; }
+  .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--bpc-border-hairline); border: 1px solid var(--bpc-border-hairline); }
+  .cell { background: var(--bpc-bg-2); padding: 26px 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; min-height: 120px; }
+  .cell.dark { background: var(--bpc-charcoal); }
+  .cap { font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--bpc-fg-3); }
+  .cell.dark .cap { color: var(--bpc-oat-40); }
+</style>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../../_ds_bundle.js"></script>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+  const { Logo } = window.BPCDesignSystem_ec4586;
+  const bp = "../../assets/logos";
+  function Demo() {
+    return (
+      <div className="grid">
+        <div className="cell"><Logo variant="lockup" color="black" height={64} basePath={bp} /><span className="cap">Lockup</span></div>
+        <div className="cell"><Logo variant="horizontal" color="black" height={26} basePath={bp} /><span className="cap">Horizontal</span></div>
+        <div className="cell"><Logo variant="iso" color="black" height={56} basePath={bp} /><span className="cap">Iso · B</span></div>
+        <div className="cell"><Logo variant="textmark" color="black" height={26} basePath={bp} /><span className="cap">Textmark</span></div>
+        <div className="cell dark"><Logo variant="lockup" color="white" height={64} basePath={bp} /><span className="cap">On charcoal</span></div>
+        <div className="cell"><Logo variant="lockup" color="db" height={64} basePath={bp} /><span className="cap">Dark brown</span></div>
+        <div className="cell"><Logo variant="lockup" color="lb" height={64} basePath={bp} /><span className="cap">Light brown</span></div>
+        <div className="cell"><Logo variant="iso" color="o" height={56} basePath={bp} /><span className="cap">Oat iso</span></div>
+      </div>
+    );
+  }
+  ReactDOM.createRoot(document.getElementById('root')).render(<Demo />);
+</script>
+</body>
+</html>

@@ -1,0 +1,339 @@
+{
+  "plugins": [
+    "react",
+    "import"
+  ],
+  "rules": {
+    "react/forbid-elements": [
+      "warn",
+      {
+        "forbid": []
+      }
+    ],
+    "no-restricted-imports": [
+      "warn",
+      {
+        "patterns": [
+          {
+            "group": [
+              "components/brand/**",
+              "components/buttons/**",
+              "components/data-display/**",
+              "components/forms/**",
+              "components/surfaces/**",
+              "ui_kits/website/**"
+            ],
+            "message": "Import design-system components from 'index.js', not component internals."
+          }
+        ]
+      }
+    ],
+    "no-restricted-syntax": [
+      "warn",
+      {
+        "selector": "Literal[value=/#[0-9a-fA-F]{3,8}\\b/]",
+        "message": "Raw hex color — use a design-system color token via var()."
+      },
+      {
+        "selector": "Literal[value=/\\b\\d+px\\b/]",
+        "message": "Raw px value — use a design-system spacing token via var()."
+      },
+      {
+        "selector": "Literal[value=/font-family\\s*:\\s*(?!['\\\"]?(?:Familjen Grotesk|Aviano Serif))/i]",
+        "message": "Font not provided by the design system. Available: Familjen Grotesk, Aviano Serif."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Button'] > JSXAttribute > JSXIdentifier[name!=/^(?:children|variant|size|uppercase|disabled|type|onClick|style|key|ref|className|style|children)$/]",
+        "message": "<Button> doesn't accept that prop. Declared props: children, variant, size, uppercase, disabled, type, onClick, style."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Button'] > JSXAttribute[name.name='variant'] > Literal[value!=/^(?:primary|secondary|ghost)$/]",
+        "message": "<Button> variant must be one of 'primary' | 'secondary' | 'ghost'."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Button'] > JSXAttribute[name.name='size'] > Literal[value!=/^(?:sm|md|lg)$/]",
+        "message": "<Button> size must be one of 'sm' | 'md' | 'lg'."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Button'] > JSXAttribute[name.name='type'] > Literal[value!=/^(?:button|submit|reset)$/]",
+        "message": "<Button> type must be one of 'button' | 'submit' | 'reset'."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Card'] > JSXAttribute > JSXIdentifier[name!=/^(?:children|variant|image|imageAlt|eyebrow|title|meta|interactive|onClick|style|key|ref|className|style|children)$/]",
+        "message": "<Card> doesn't accept that prop. Declared props: children, variant, image, imageAlt, eyebrow, title, meta, interactive, onClick, style."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Card'] > JSXAttribute[name.name='variant'] > Literal[value!=/^(?:flat|elevated|image)$/]",
+        "message": "<Card> variant must be one of 'flat' | 'elevated' | 'image'."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Eyebrow'] > JSXAttribute > JSXIdentifier[name!=/^(?:children|tone|as|style|key|ref|className|style|children)$/]",
+        "message": "<Eyebrow> doesn't accept that prop. Declared props: children, tone, as, style."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Eyebrow'] > JSXAttribute[name.name='tone'] > Literal[value!=/^(?:muted|strong|inverse)$/]",
+        "message": "<Eyebrow> tone must be one of 'muted' | 'strong' | 'inverse'."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Input'] > JSXAttribute > JSXIdentifier[name!=/^(?:label|type|value|defaultValue|placeholder|disabled|invalid|onChange|id|style|key|ref|className|style|children)$/]",
+        "message": "<Input> doesn't accept that prop. Declared props: label, type, value, defaultValue, placeholder, disabled, invalid, onChange, id, style."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Logo'] > JSXAttribute > JSXIdentifier[name!=/^(?:variant|color|height|basePath|alt|style|key|ref|className|style|children)$/]",
+        "message": "<Logo> doesn't accept that prop. Declared props: variant, color, height, basePath, alt, style."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Logo'] > JSXAttribute[name.name='variant'] > Literal[value!=/^(?:lockup|horizontal|iso|textmark|box)$/]",
+        "message": "<Logo> variant must be one of 'lockup' | 'horizontal' | 'iso' | 'textmark' | 'box'."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Logo'] > JSXAttribute[name.name='color'] > Literal[value!=/^(?:black|white|db|lb|o)$/]",
+        "message": "<Logo> color must be one of 'black' | 'white' | 'db' | 'lb' | 'o'."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='SelectOption'] > JSXAttribute > JSXIdentifier[name!=/^(?:value|label|key|ref|className|style|children)$/]",
+        "message": "<SelectOption> doesn't accept that prop. Declared props: value, label."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Tag'] > JSXAttribute > JSXIdentifier[name!=/^(?:children|variant|shape|style|key|ref|className|style|children)$/]",
+        "message": "<Tag> doesn't accept that prop. Declared props: children, variant, shape, style."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Tag'] > JSXAttribute[name.name='variant'] > Literal[value!=/^(?:outline|solid|dark)$/]",
+        "message": "<Tag> variant must be one of 'outline' | 'solid' | 'dark'."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Tag'] > JSXAttribute[name.name='shape'] > Literal[value!=/^(?:pill|square)$/]",
+        "message": "<Tag> shape must be one of 'pill' | 'square'."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Textarea'] > JSXAttribute > JSXIdentifier[name!=/^(?:label|value|defaultValue|placeholder|rows|disabled|invalid|onChange|id|style|key|ref|className|style|children)$/]",
+        "message": "<Textarea> doesn't accept that prop. Declared props: label, value, defaultValue, placeholder, rows, disabled, invalid, onChange, id, style."
+      }
+    ]
+  },
+  "overrides": [
+    {
+      "files": [
+        "**/index.js"
+      ],
+      "rules": {
+        "no-restricted-imports": "off"
+      }
+    }
+  ],
+  "x-omelette": {
+    "components": {
+      "Button": {
+        "replaces": []
+      },
+      "Card": {
+        "replaces": []
+      },
+      "Eyebrow": {
+        "replaces": []
+      },
+      "Input": {
+        "replaces": []
+      },
+      "Logo": {
+        "replaces": []
+      },
+      "SelectOption": {
+        "replaces": []
+      },
+      "Tag": {
+        "replaces": []
+      },
+      "Textarea": {
+        "replaces": []
+      }
+    },
+    "tokens": [
+      "--bpc-bg-1",
+      "--bpc-bg-2",
+      "--bpc-bg-3",
+      "--bpc-bg-accent",
+      "--bpc-bg-dark",
+      "--bpc-border-hairline",
+      "--bpc-border-strong",
+      "--bpc-border-subtle",
+      "--bpc-border-thick",
+      "--bpc-border-width",
+      "--bpc-charcoal",
+      "--bpc-charcoal-20",
+      "--bpc-charcoal-40",
+      "--bpc-charcoal-60",
+      "--bpc-charcoal-80",
+      "--bpc-container-max",
+      "--bpc-content-max",
+      "--bpc-duration-base",
+      "--bpc-duration-fast",
+      "--bpc-duration-slow",
+      "--bpc-ease-entrance",
+      "--bpc-ease-standard",
+      "--bpc-espresso",
+      "--bpc-espresso-20",
+      "--bpc-espresso-40",
+      "--bpc-espresso-60",
+      "--bpc-espresso-80",
+      "--bpc-fg-1",
+      "--bpc-fg-2",
+      "--bpc-fg-3",
+      "--bpc-fg-inverse",
+      "--bpc-font-sans",
+      "--bpc-font-serif",
+      "--bpc-fs-body",
+      "--bpc-fs-body-lg",
+      "--bpc-fs-body-sm",
+      "--bpc-fs-caption",
+      "--bpc-fs-display",
+      "--bpc-fs-eyebrow",
+      "--bpc-fs-h1",
+      "--bpc-fs-h2",
+      "--bpc-fs-h3",
+      "--bpc-fs-h4",
+      "--bpc-fw-aviano-light",
+      "--bpc-fw-aviano-regular",
+      "--bpc-fw-bold",
+      "--bpc-fw-medium",
+      "--bpc-fw-regular",
+      "--bpc-fw-semibold",
+      "--bpc-latte",
+      "--bpc-latte-20",
+      "--bpc-latte-40",
+      "--bpc-latte-60",
+      "--bpc-latte-80",
+      "--bpc-lh-body",
+      "--bpc-lh-display",
+      "--bpc-lh-heading",
+      "--bpc-lh-tight",
+      "--bpc-ls-aviano",
+      "--bpc-ls-body",
+      "--bpc-ls-eyebrow",
+      "--bpc-ls-label",
+      "--bpc-oat",
+      "--bpc-oat-20",
+      "--bpc-oat-40",
+      "--bpc-oat-60",
+      "--bpc-oat-80",
+      "--bpc-pastel",
+      "--bpc-radius-lg",
+      "--bpc-radius-md",
+      "--bpc-radius-none",
+      "--bpc-radius-pill",
+      "--bpc-radius-sm",
+      "--bpc-shadow-lg",
+      "--bpc-shadow-md",
+      "--bpc-shadow-sm",
+      "--bpc-shadow-xs",
+      "--bpc-space-0",
+      "--bpc-space-1",
+      "--bpc-space-10",
+      "--bpc-space-2",
+      "--bpc-space-3",
+      "--bpc-space-4",
+      "--bpc-space-5",
+      "--bpc-space-6",
+      "--bpc-space-7",
+      "--bpc-space-8",
+      "--bpc-space-9",
+      "--bpc-white"
+    ],
+    "tokenKinds": {
+      "--bpc-charcoal": "color",
+      "--bpc-charcoal-80": "color",
+      "--bpc-charcoal-60": "color",
+      "--bpc-charcoal-40": "color",
+      "--bpc-charcoal-20": "color",
+      "--bpc-white": "color",
+      "--bpc-pastel": "color",
+      "--bpc-espresso": "color",
+      "--bpc-espresso-80": "color",
+      "--bpc-espresso-60": "color",
+      "--bpc-espresso-40": "color",
+      "--bpc-espresso-20": "color",
+      "--bpc-latte": "color",
+      "--bpc-latte-80": "color",
+      "--bpc-latte-60": "color",
+      "--bpc-latte-40": "color",
+      "--bpc-latte-20": "color",
+      "--bpc-oat": "color",
+      "--bpc-oat-80": "color",
+      "--bpc-oat-60": "color",
+      "--bpc-oat-40": "color",
+      "--bpc-oat-20": "color",
+      "--bpc-fg-1": "color",
+      "--bpc-fg-2": "color",
+      "--bpc-fg-3": "color",
+      "--bpc-fg-inverse": "color",
+      "--bpc-bg-1": "color",
+      "--bpc-bg-2": "color",
+      "--bpc-bg-3": "color",
+      "--bpc-bg-dark": "color",
+      "--bpc-bg-accent": "color",
+      "--bpc-border-hairline": "color",
+      "--bpc-border-subtle": "color",
+      "--bpc-border-strong": "color",
+      "--bpc-font-sans": "font",
+      "--bpc-font-serif": "font",
+      "--bpc-fw-regular": "font",
+      "--bpc-fw-medium": "font",
+      "--bpc-fw-semibold": "font",
+      "--bpc-fw-bold": "font",
+      "--bpc-fw-aviano-light": "font",
+      "--bpc-fw-aviano-regular": "font",
+      "--bpc-fs-display": "spacing",
+      "--bpc-fs-h1": "spacing",
+      "--bpc-fs-h2": "spacing",
+      "--bpc-fs-h3": "spacing",
+      "--bpc-fs-h4": "spacing",
+      "--bpc-fs-body-lg": "spacing",
+      "--bpc-fs-body": "spacing",
+      "--bpc-fs-body-sm": "spacing",
+      "--bpc-fs-caption": "spacing",
+      "--bpc-fs-eyebrow": "spacing",
+      "--bpc-lh-display": "font",
+      "--bpc-lh-heading": "font",
+      "--bpc-lh-body": "font",
+      "--bpc-lh-tight": "font",
+      "--bpc-ls-aviano": "font",
+      "--bpc-ls-eyebrow": "font",
+      "--bpc-ls-label": "font",
+      "--bpc-ls-body": "font",
+      "--bpc-space-0": "spacing",
+      "--bpc-space-1": "spacing",
+      "--bpc-space-2": "spacing",
+      "--bpc-space-3": "spacing",
+      "--bpc-space-4": "spacing",
+      "--bpc-space-5": "spacing",
+      "--bpc-space-6": "spacing",
+      "--bpc-space-7": "spacing",
+      "--bpc-space-8": "spacing",
+      "--bpc-space-9": "spacing",
+      "--bpc-space-10": "spacing",
+      "--bpc-radius-none": "radius",
+      "--bpc-radius-sm": "radius",
+      "--bpc-radius-md": "radius",
+      "--bpc-radius-lg": "radius",
+      "--bpc-radius-pill": "radius",
+      "--bpc-border-width": "spacing",
+      "--bpc-border-thick": "spacing",
+      "--bpc-shadow-xs": "shadow",
+      "--bpc-shadow-sm": "shadow",
+      "--bpc-shadow-md": "shadow",
+      "--bpc-shadow-lg": "shadow",
+      "--bpc-ease-standard": "other",
+      "--bpc-ease-entrance": "other",
+      "--bpc-duration-fast": "other",
+      "--bpc-duration-base": "other",
+      "--bpc-duration-slow": "other",
+      "--bpc-container-max": "spacing",
+      "--bpc-content-max": "other"
+    },
+    "fontFamilies": [
+      "Aviano Serif",
+      "Familjen Grotesk"
+    ]
+  }
+}

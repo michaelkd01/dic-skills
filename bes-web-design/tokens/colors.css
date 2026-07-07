@@ -1,0 +1,51 @@
+/* =========================================================================
+   BPC — Color tokens
+   PRIMARY: Charcoal + White + Pastel.  SECONDARY: Espresso / Latte / Oat.
+   Hard brand rule: never combine Charcoal AND Espresso as the dark in one
+   composition. Pick one. Secondary palette is used for accents on crossover.
+   ========================================================================= */
+:root {
+  /* PRIMARY PALETTE (Charcoal & White) ---------------------------------- */
+  --bpc-charcoal: #181818;      /* Primary brand black — never pure #000 */
+  --bpc-charcoal-80: #464646;
+  --bpc-charcoal-60: #747474;
+  --bpc-charcoal-40: #a3a3a3;
+  --bpc-charcoal-20: #d1d1d1;
+  --bpc-white: #FFFFFF;
+  --bpc-pastel: #F9F8F7;        /* Off-white for digital (reduces glare) */
+
+  /* SECONDARY PALETTE (Warm Browns — "Quiet Luxury") --------------------- */
+  --bpc-espresso: #3a2f2b;
+  --bpc-espresso-80: #61544f;
+  --bpc-espresso-60: #887a73;
+  --bpc-espresso-40: #b0a49e;
+  --bpc-espresso-20: #d7d1ce;
+
+  --bpc-latte: #987f6a;
+  --bpc-latte-80: #ad9988;
+  --bpc-latte-60: #c1b2a6;
+  --bpc-latte-40: #d6ccc3;
+  --bpc-latte-20: #eae5e1;
+
+  --bpc-oat: #d9d1c7;
+  --bpc-oat-80: #e1dad1;
+  --bpc-oat-60: #e8e3dc;
+  --bpc-oat-40: #f0ede8;
+  --bpc-oat-20: #f7f6f3;
+
+  /* SEMANTIC SURFACE / TEXT --------------------------------------------- */
+  --bpc-fg-1: var(--bpc-charcoal);         /* Primary text */
+  --bpc-fg-2: var(--bpc-charcoal-80);      /* Body secondary */
+  --bpc-fg-3: var(--bpc-charcoal-60);      /* Muted / meta */
+  --bpc-fg-inverse: var(--bpc-pastel);     /* Text on dark surfaces */
+
+  --bpc-bg-1: var(--bpc-pastel);           /* Default surface (digital) */
+  --bpc-bg-2: var(--bpc-white);            /* Elevated / cards */
+  --bpc-bg-3: var(--bpc-oat-20);           /* Subtle tinted warm */
+  --bpc-bg-dark: var(--bpc-charcoal);      /* Dark / inverse surface */
+  --bpc-bg-accent: var(--bpc-oat);         /* Warm accent block */
+
+  --bpc-border-hairline: rgba(24,24,24,0.12);
+  --bpc-border-subtle: rgba(24,24,24,0.22);
+  --bpc-border-strong: var(--bpc-charcoal);
+}

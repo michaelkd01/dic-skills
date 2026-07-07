@@ -1,0 +1,48 @@
+/* =========================================================================
+   BPC — Spacing, radii, borders, elevation, motion, layout
+   4px base grid. Whitespace is a brand asset — keep rhythm generous.
+   Hard edges dominate (radius 0); shadows are restrained
+   (brand rule: "never drop-shadow the logo" — extend that sensibility).
+   ========================================================================= */
+:root {
+  /* SPACING — 4px base ------------------------------------------------- */
+  --bpc-space-0: 0;
+  --bpc-space-1: 4px;
+  --bpc-space-2: 8px;
+  --bpc-space-3: 12px;
+  --bpc-space-4: 16px;
+  --bpc-space-5: 24px;
+  --bpc-space-6: 32px;
+  --bpc-space-7: 48px;
+  --bpc-space-8: 64px;
+  --bpc-space-9: 96px;
+  --bpc-space-10: 128px;
+
+  /* RADII — minimal; hard edges dominate ------------------------------- */
+  --bpc-radius-none: 0;
+  --bpc-radius-sm: 2px;
+  --bpc-radius-md: 4px;
+  --bpc-radius-lg: 8px;
+  --bpc-radius-pill: 999px;
+
+  /* BORDERS */
+  --bpc-border-width: 1px; /* @kind spacing */
+  --bpc-border-thick: 1.5px; /* @kind spacing */
+
+  /* ELEVATION — restrained, soft warm-black tints ---------------------- */
+  --bpc-shadow-xs: 0 1px 2px rgba(24,24,24,0.04);
+  --bpc-shadow-sm: 0 2px 8px rgba(24,24,24,0.06);
+  --bpc-shadow-md: 0 8px 24px rgba(24,24,24,0.08);
+  --bpc-shadow-lg: 0 18px 48px rgba(24,24,24,0.12);
+
+  /* MOTION — fades and slow reveals; no springy physics ---------------- */
+  --bpc-ease-standard: cubic-bezier(0.22, 0.61, 0.36, 1); /* @kind other */
+  --bpc-ease-entrance: cubic-bezier(0.16, 1, 0.3, 1); /* @kind other */
+  --bpc-duration-fast: 160ms; /* @kind other */
+  --bpc-duration-base: 240ms; /* @kind other */
+  --bpc-duration-slow: 480ms; /* @kind other */
+
+  /* LAYOUT */
+  --bpc-container-max: 1320px; /* @kind spacing */
+  --bpc-content-max: 68ch; /* @kind other */
+}

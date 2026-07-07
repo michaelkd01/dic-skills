@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<!-- @dsCard group="Spacing" name="Elevation" subtitle="Hairline · SM · MD · LG" viewport="700x180" --><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  html,body{margin:0;background:var(--bpc-bg-1);font-family:var(--bpc-font-sans);}
+  body{padding:28px 36px;box-sizing:border-box;}
+  .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:22px;}
+  .item{display:flex;flex-direction:column;align-items:center;gap:10px;}
+  .box{width:96px;height:64px;background:#fff;border-radius:2px;}
+  .tok{font-family:ui-monospace,Menlo,monospace;font-size:10px;color:var(--bpc-fg-3);text-align:center;}
+  .name{font-size:11px;font-weight:500;}
+</style></head><body>
+<div class="grid">
+  <div class="item"><div class="box" style="border:1px solid rgba(24,24,24,0.12);"></div><div class="name">Hairline</div><div class="tok">1px border<br>(default card)</div></div>
+  <div class="item"><div class="box" style="box-shadow:0 2px 8px rgba(24,24,24,0.06);"></div><div class="name">Shadow SM</div><div class="tok">0 2 8 / .06</div></div>
+  <div class="item"><div class="box" style="box-shadow:0 8px 24px rgba(24,24,24,0.08);"></div><div class="name">Shadow MD</div><div class="tok">0 8 24 / .08</div></div>
+  <div class="item"><div class="box" style="box-shadow:0 18px 48px rgba(24,24,24,0.12);"></div><div class="name">Shadow LG</div><div class="tok">0 18 48 / .12</div></div>
+</div>
+</body></html>
