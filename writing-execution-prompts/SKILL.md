@@ -256,11 +256,24 @@ File naming: `{LINEAR-KEY}-{N}-{kebab-case-description}.md` (e.g., `ANY-19-csp-r
 
 ## Handback Audit (MANDATORY final output)
 
-Every deliverable produced under this skill ... plan, scoped issue, execution prompt, verdict, or status update ... MUST end with a Handback Audit block:
+Every deliverable produced under this skill ... plan, scoped issue, execution prompt, verdict, or status update ... MUST end with a Handback Audit block. Emit it in this labelled-field form, one field per line, so it stays scannable in chat and when pasted into Notion:
 
-HANDBACK AUDIT
-Items assigned to a human: {N}
-- {action} | category: {interactive-only auth | credential confirmed absent | irreversible high-stakes | judgment call} | evidence: {what was checked and why no autonomous path exists}
-(if N = 0): NONE ... every action is autonomous or queued to an agent.
+**HANDBACK AUDIT** · {N} handbacks · {M} decisions pending
+
+**1. {imperative action}**
+- **Category** · {interactive-only auth | credential confirmed absent | irreversible high-stakes | judgment call}
+- **Blocked because** · {one line: what was checked, why no autonomous path exists}
+- **Already autonomous** · {what was done inside the boundary, so the handback's scope is visible}
+- **Return to me** · {the exact artefact to paste back; omit this line when there is none}
+
+...repeat the numbered block per handback item...
+
+**Decisions pending (not handbacks)**
+- {item} ... {why it is a decision, and what you do once the operator calls it}
+
+Block rules:
+- The header counts both: `{N} handbacks` is the number of numbered items; `{M} decisions pending` is the number of entries below. Omit the Decisions pending section when M = 0.
+- A judgment call you will action yourself once the operator decides is a decision pending, never a handback ... do not bury it inside a handback item's evidence.
+- When N = 0, emit `**HANDBACK AUDIT** · 0 handbacks · nothing owed by you` (followed by the Decisions pending section only if M > 0).
 
 An item that cannot be mapped to an allowed category with evidence is a defect: convert it into an autonomous step or execution prompt before delivery. A deliverable missing this block fails validation. The categories and evidence standard are defined by the Capability Exhaustion Gate in the writing-execution-prompts skill.
