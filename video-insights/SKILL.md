@@ -39,14 +39,14 @@ Structure, inline in chat, in this order:
 
 **Header** ... one line: title, channel, duration, publish date.
 
-**TL;DR** ... two to three sentences capturing the thesis and conclusion. Write it so the user can decide in five seconds whether to keep reading.
+**TL;DR** ... two to three scannable bullet points (not a paragraph) capturing the thesis and conclusion, one line each. Write them so the user can decide in five seconds whether to keep reading.
 
-**Honest read** ... a short paragraph giving a straight quality and credibility assessment: is this worth watching, is the content substantive or thin/derivative/clickbait relative to its title, and how credible are its central claims. No glazing. If claims are extraordinary or unverifiable, say so plainly.
+**Honest read** ... a few scannable bullet points (not a paragraph) giving a straight quality and credibility assessment: worth watching or not; substantive vs thin, derivative, or clickbait relative to its title; how credible the central claims are. No glazing. If claims are extraordinary or unverifiable, say so plainly.
 
 **Relevant to you** ... map content against the interest graph and memory. Rules:
 
 - Only genuine, specific matches. "This is about AI and you work with AI" is not a match. "The guest describes async video screening pricing at $X/interview, directly comparable to AnytimeInterview's model" is a match.
-- For each hit: the theme, which venture/interest it maps to, and why it matters in one or two sentences, with timestamp. Put a jump link on its own line beneath the hit (see Timestamp deep links).
+- For each hit: the theme, which venture/interest it maps to, and why it matters in one or two sentences, ending with the timestamp as a clickable bracket link (see Timestamp deep links).
 - If nothing genuinely lands, say exactly: "No direct relevance to active projects or tracked interests." Do not pad or force connections.
 - This section maps only ... it names what connects and why. Adoption verdicts and proposed actions live in the next section, never here.
 
@@ -61,22 +61,21 @@ Structure, inline in chat, in this order:
 - Route proposed actions, do not create them:
   - Work items name the target Linear team and project (ANY, BES, G2G, STM, PRO, INF) so the item can be queued via the normal scoping flow.
   - Personal items name where they land (an interest-graph or Obsidian note, a practice/shopping note, or just a plain suggestion). Personal life is in scope: golf, wine, cooking, family, home systems, cycling.
-- Each entry gets a jump link on its own line beneath its timestamp (see Timestamp deep links).
+- Each entry ends with its timestamp as a clickable bracket link (see Timestamp deep links).
 - Propose only. This skill still never writes to Linear, Todoist, Obsidian, or Notion, and never opens issues. It stops at the recommendation.
 - No glazing. A weak idea gets a Skip or gets left out, not a soft Adopt.
 
-**Timestamp deep links** ... every timestamp shown in Relevant to you, Adopt this?, and Key points gets a jump link on its own line directly beneath it. Convert the START of the range to total seconds and build the line exactly as:
+**Timestamp deep links** ... every timestamp shown in Relevant to you, Adopt this?, and Key points IS itself the clickable link. Keep the square brackets and wrap the whole bracket as the link text ... there is no separate line beneath. Convert the START of the range to total seconds and build it exactly as:
 
-    ↳ [jump to {m:ss}](https://youtu.be/{ID}?t={seconds})
+`[[6:35–8:55]](https://youtu.be/{ID}?t={seconds})` ... which renders as a clickable [6:35–8:55].
 
 Link to the range start only ... YouTube deep links target a single moment, not a span. Use the video ID retained in step 1. Omit for Shorts and for any output that has no per-point timestamps.
 
 **Key points** ... always the last section. The video's main claims and structure. Format each point exactly as:
 
-- **Short bolded heading** (three to six words, sentence case): the specifics ... numbers, named tools, frameworks, people, prices ... not vague gestures at topics. End the point with the timestamp range in square brackets. [4:12–6:30]
-    ↳ [jump to 4:12](https://youtu.be/{ID}?t=252)
+- **Short bolded heading** (three to six words, sentence case): the specifics ... numbers, named tools, frameworks, people, prices ... not vague gestures at topics. End the point with the timestamp range as a clickable bracket link. [[4:12–6:30]](https://youtu.be/{ID}?t=252)
 
-The bolded heading comes first, the timestamp comes last, and the jump link sits on its own indented line directly beneath it (see Timestamp deep links). Never lead a point with the timestamp. Scale to content: a 10-minute video gets 4-6 points; a 2-hour podcast gets sectioned points under topic headings.
+The bolded heading comes first, the timestamp comes last and is itself the link (see Timestamp deep links) ... there is no separate line beneath. Never lead a point with the timestamp. Scale to content: a 10-minute video gets 4-6 points; a 2-hour podcast gets sectioned points under topic headings.
 
 ### 6. Follow-ups
 
