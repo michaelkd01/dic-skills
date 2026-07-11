@@ -3,3 +3,6 @@
 ._*
 .Spotlight-V100
 .Trashes
+
+# Skill bundles are build artifacts; track plaintext source dirs, not zips
+*.skill
