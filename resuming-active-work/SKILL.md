@@ -71,7 +71,7 @@ Resolve the Project's identity per the section above. Output a one-line scope st
 ### Phase 2 ... Parallel full pull
 Pull each source in full for the resolved scope. Do not summarise yet ... gather first.
 
-- **Linear** (claimed state): `list_issues` filtered by team/project and state; enumerate epic children with `parentId`; `get_issue` with `includeRelations: true` to capture linked PRs, labels, and blocking relations. Capture state, assignee, last update, linked PR refs.
+- **Linear** (claimed state): `list_issues` filtered by team/project and state; enumerate epic children with `parentId`; `get_issue` with `includeRelations: true` to capture linked PRs, labels, and blocking relations. Capture state, assignee, last update, linked PR refs. Additionally pull all open issues in scope with the `security` label or `[Security]` title prefix in Backlog/Triage ... these are nightly-security-review auto-triage tickets awaiting human disposition and feed Phase 4.5.
 - **GitHub** (ground truth): `search_pull_requests` for open and recently merged PRs on each repo in scope; `pull_request_read` (`get_files`, `get_diff`) for PRs of interest; `get_check_runs` for CI status; `list_commits` / `list_branches` for stale branches. This is the authority every Linear claim is checked against.
 - **Notion** (knowledge): fetch the Project's doc(s); capture decisions recorded and any "on the horizon" items.
 - **Obsidian** (wiki): `read_note` on the Project's wiki note and linked decision notes (exact paths beat `search_notes` for known facts); capture architecture decisions and TODOs.
@@ -97,6 +97,17 @@ From the Project's threads (Phase 2), extract implied commitments and decisions 
 - Match against Linear by topic/keywords. If a ticket exists, verify its state per Phase 3.
 - If no ticket exists, record it as an **uncaptured item** with a one-line description and the thread it came from.
 Be conservative ... prefer surfacing a candidate for confirmation over silently creating it.
+
+### Phase 4.5 ... Security ticket triage (joint judgement)
+The nightly security review auto-creates `[Security]` issues into Backlog/Triage with no delegate, by design (v3.2 posture: human review before execution). Every resume session dispositions them ... they are never silently skipped, and the section's summary line is mandatory even at zero, so an empty section is distinguishable from a step that did not run.
+
+For each open `[Security]` issue in scope, present: severity, one-line finding, repo, age in nights since creation, and persistence (check the most recent Security Review Log entry in Notion ... if the finding no longer appears, mark "possibly resolved"; if it appears, mark "persisting"; if the log is unavailable, mark "unknown"). Then take a joint verdict with the user per ticket:
+
+- **PROCESS** ... promote for execution: `save_issue` state → Todo, delegate → Cyrus Agent. The issue body was written promotion-ready by the nightly review; do not re-scope unless the AC is visibly stale.
+- **STRIKE** ... `save_issue` state → Canceled with a comment recording the reason. If struck as a false positive, additionally record it as a candidate allowlist entry (KG-1XX with proposed expiry) for the nightly-security-review prompt, and surface that doc change as a next action ... a strike without an allowlist candidate will recreate itself.
+- **HOLD** ... remains in Backlog; record the hold count on the ticket (comment). Any ticket held across 3+ resume sessions is flagged RED in Phase 6 for a forced verdict.
+
+Verdicts are judgment calls ... never auto-decide. Present the batch, take the user's call per ticket (or "process all" / "strike all" for a batch call), then execute the Linear mutations directly.
 
 ### Phase 5 ... Assemble outputs
 Produce the report (template below): the six buckets, plus a discrepancies section (Phase 3 mismatches) and an uncaptured section (Phase 4 candidates).
@@ -142,6 +153,11 @@ RECENTLY DONE (verified)
 
 DISCREPANCIES
 - {KEY-N} ... Linear says {x}, GitHub shows {y}
+
+SECURITY BACKLOG ... {N} open, joint triage required
+- {KEY-N} [{CRITICAL|HIGH}] {finding one-liner} ... {repo}, {age} nights, {persisting|possibly resolved|unknown}, held {h}x
+(verdicts: PROCESS → Todo+Cyrus | STRIKE → Canceled+allowlist candidate | HOLD → flag RED at 3 holds)
+Summary line (mandatory even at zero): "Security backlog: {N} open, {p} processed, {s} struck, {h} held."
 
 UNCAPTURED (from threads, confirm to create)
 - {one-liner} ... from {thread}
