@@ -49,11 +49,11 @@ Which sources apply is hard-coded per venture below (on/off). The ADDRESSES for 
 
 | Project | Gmail | Slack | Notion | Todoist | Threads | Linear | GitHub |
 |---|---|---|---|---|---|---|---|
-| propell | on | on | on | on | on | on | on |
-| anytimeinterview | on | off | on | on | on | on | on |
-| bespoke | on | off | on | on | on | on | on |
+| propell | on | on | on | on | on | off | off |
+| anytimeinterview | on | on | on | on | on | on | on |
+| bespoke | on | on | on | on | on | on | on |
 
-Rationale (do not re-derive per run): Propell is comms-heavy, so both Gmail and Slack are on. AnytimeInterview and Bespoke run their comms through email and Linear rather than an active Slack, so Slack is off. All three are dev ventures, so Linear + GitHub are on ... for a non-dev venture those two columns would be off. Notion, Todoist and Threads are on for every venture. A source that is `off` in this matrix is skipped silently (by design, not degradation); a source that is `on` but has no address in the registry is skipped and reported unresolved (see Phase 6 degradation).
+Rationale (do not re-derive per run): all three ventures have an active Slack workspace (Propell Slack; Social Club Slack for AnytimeInterview; Bespoke Slack), so Slack is on for each. AnytimeInterview and Bespoke are the dev ventures (wired Linear team + repos), so Linear + GitHub are on. Propell has no wired Linear team or repos, so Linear + GitHub are off ... it is treated as non-dev here. Notion, Todoist and Threads are on for every venture. A source that is off is skipped silently by design; a source that is on but has no registry address is skipped and reported unresolved (Phase 6).
 
 ## Phase 3 ... Per-source pulls (read-only, each filtered to `> {SINCE}`)
 
