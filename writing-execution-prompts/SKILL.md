@@ -198,6 +198,14 @@ A NOT-CAPABLE verdict is valid ONLY if it lists every location checked, the exac
 
 Human handback is permitted only for: interactive-only auth (browser OAuth / device flows), credentials confirmed absent from all of the above, irreversible high-stakes actions, or genuine judgment calls.
 
+## Guard Conditions (write to intent)
+
+A STOP or guard condition must test the actual risk it exists to prevent, not a proxy that is merely easier to express. A proxy that over-fires trains the executor to treat guards as advisory, which erodes their authority for the case that genuinely matters.
+
+- State the intent, then choose a check that matches it exactly. If the check can fire when nothing is actually at risk, it is a proxy ... tighten it.
+- Worked example: "STOP if `git status --porcelain` is non-empty" is a proxy for "STOP if there are uncommitted changes to tracked files". `porcelain` also lists untracked files, which a checkout or fast-forward cannot destroy, so the proxy over-fires. Write the intent-matching form: STOP if `git status --porcelain=v1 | grep -v '^??'` is non-empty (uncommitted tracked changes only).
+- The test before shipping a guard: could it fire in a situation where proceeding is actually safe? If yes, rewrite it so the literal condition and the correct behaviour coincide.
+
 ## Validation Checklist
 
 Before delivering any prompt, verify ALL of the following:
@@ -219,6 +227,7 @@ Before delivering any prompt, verify ALL of the following:
 - [ ] If this is a Cyrus config edit: source-of-truth mirror, pm2 restart, and status check are all in the steps
 - [ ] Every step that can fail on a missing credential or permission is preceded by a Capability Exhaustion Gate discovery phase
 - [ ] The deliverable ends with a Handback Audit block, and every item in it carries an allowed category plus evidence
+- [ ] Every STOP/guard condition tests intent, not a proxy (see Guard Conditions)
 
 ## Delivery Format
 
@@ -246,6 +255,7 @@ File naming: `{LINEAR-KEY}-{N}-{kebab-case-description}.md` (e.g., `ANY-19-csp-r
 - Never conclude NOT-CAPABLE from a single-location credential check
 - Never hand a human a task that an available parent credential could derive or an authenticated API could perform
 - Never hand a human a deploy/provision/config action without first checking the installed CLIs and connected MCPs that perform it (see BES-119: a Vercel deploy was handed back when vercel + gh + op and the Vercel MCP all covered it)
+- Never write a STOP/guard condition as a proxy that over-fires (e.g. "porcelain non-empty" when the intent is uncommitted *tracked* changes). A guard that fires when proceeding is safe erodes the authority of guards that matter ... see Guard Conditions.
 
 ## Related
 
