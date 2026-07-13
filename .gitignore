@@ -4,5 +4,5 @@
 .Spotlight-V100
 .Trashes
 
-# Skill bundles are build artifacts; track plaintext source dirs, not zips
-*.skill
+# Stray root-level export zips are local build artifacts; track source dirs, not zips
+/*.zip

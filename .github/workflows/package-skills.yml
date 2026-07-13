@@ -1,0 +1,45 @@
+name: Package skills
+
+on:
+  pull_request:
+    paths:
+      - '**/SKILL.md'
+      - '**/references/**'
+      - '**/assets/**'
+    paths-ignore:
+      - '**/*.skill'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install pyyaml
+
+      - name: Package all skills
+        run: python scripts/package_skill.py --all
+
+      - name: Commit repackaged skills
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          if [ -n "$(git status --porcelain -- '**/*.skill')" ]; then
+            git add -- '**/*.skill'
+            git commit -m 'ci: repackage skills [skip ci]'
+            git push origin HEAD:${{ github.head_ref }}
+          else
+            echo 'No skill changes to commit.'
+          fi

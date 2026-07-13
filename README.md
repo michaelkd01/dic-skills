@@ -40,6 +40,10 @@ Skills are organised by which role in the three-role model consumes them.
 - **Claude.ai chat sessions:** uploaded via Settings → Skills, mounted at `/mnt/skills/user/`
 - **Cyrus and Claude Code manual sessions:** read from the local checkout at `/Users/michaeldavidson/Developer/dic-skills/`
 
+## Packaging
+
+`.skill` files are the packaged, distributable form of each skill. They are **CI-generated**, committed adjacent to each skill folder (`<skill>/<skill>.skill`), and **never hand-edited** ... an on-PR GitHub Action repackages any changed skill and commits the refreshed artifact onto the PR branch. To rebuild locally, run `make package` or `python scripts/package_skill.py --all`. See `wiki/decisions/skill-packaging-standard.md`.
+
 ## Related
 
 - `wiki/decisions/linear-cyrus-replaces-paperclip.md` ... why this is the current execution model
