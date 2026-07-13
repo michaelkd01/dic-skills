@@ -228,6 +228,7 @@ Before delivering any prompt, verify ALL of the following:
 - [ ] Every step that can fail on a missing credential or permission is preceded by a Capability Exhaustion Gate discovery phase
 - [ ] The deliverable ends with a Handback Audit block, and every item in it carries an allowed category plus evidence
 - [ ] Every STOP/guard condition tests intent, not a proxy (see Guard Conditions)
+- [ ] Literal emails / URLs / values-to-copy are wrapped in backticks (auto-linkify guard)
 
 ## Delivery Format
 
@@ -238,6 +239,8 @@ The prompt IS the Linear issue. Title goes in the Linear title; the rest goes in
 The prompt is a standalone Markdown artifact at `/mnt/user-data/outputs/`. Planning context and concurrency summary stay in the chat body, not in the prompt file.
 
 File naming: `{LINEAR-KEY}-{N}-{kebab-case-description}.md` (e.g., `ANY-19-csp-reporting-endpoint.md`). For ad hoc without a Linear issue: `{kebab-case-description}.md`.
+
+The attached Linear sub-document is the single source of truth for the prompt. Fetch the current version at execution time (Linear `get_document`) rather than running a pasted or cached copy ... a post-delivery revision silently supersedes earlier copies. Incident: a SOC-158 session ran a pre-correction prompt and shipped a defect the revision had already fixed.
 
 ## Anti-Patterns (Never Do These)
 
@@ -256,6 +259,7 @@ File naming: `{LINEAR-KEY}-{N}-{kebab-case-description}.md` (e.g., `ANY-19-csp-r
 - Never hand a human a task that an available parent credential could derive or an authenticated API could perform
 - Never hand a human a deploy/provision/config action without first checking the installed CLIs and connected MCPs that perform it (see BES-119: a Vercel deploy was handed back when vercel + gh + op and the Vercel MCP all covered it)
 - Never write a STOP/guard condition as a proxy that over-fires (e.g. "porcelain non-empty" when the intent is uncommitted *tracked* changes). A guard that fires when proceeding is safe erodes the authority of guards that matter ... see Guard Conditions.
+- Never leave a bare email or URL in a prompt delivered through Linear or Notion. Those surfaces auto-linkify them (a bare `michael.d@propell.au` becomes a `[...](mailto:...)` link), and the executor copies the wrapped form verbatim into the target file, corrupting it. Wrap any literal address, URL, or value-to-be-copied in inline backticks so it survives the round-trip. (SOC-158.)
 
 ## Related
 
