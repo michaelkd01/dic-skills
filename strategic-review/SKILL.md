@@ -31,9 +31,10 @@ Accept a scope token (e.g. "bespoke", "anytime", "propell", "infra").
 If no token is given, ask which project ... one question, do not guess.
 
 ## Step 2 ... Read the Anchor
-1. Read Strategy doc Section 2 (Strategic Priorities, ranked) ... the anchor.
-2. Read Section 8 (What the Agent Should Watch).
-3. If Section 2 is absent or has no ranked priorities: emit `GAP: {project} has no ranked Strategic Priorities. Populate Strategy Doc Section 2 before a strategic review.` and stop.
+Locate blocks by HEADING NAME, not section number ... strategy docs vary in numbering (the template puts Strategic Priorities at Section 2, but real docs may differ, e.g. the Bespoke doc uses "4. Strategic Priorities").
+1. Find the ranked-priorities block: the heading whose text contains "Strategic Priorities" (case-insensitive), ignoring any leading number. Read the ranked priorities under it ... the anchor.
+2. Find the watch-signals block: the heading containing "What the Agent Should Watch", falling back to "Open Strategic Questions" if that is what the doc uses. Read it if present.
+3. If no "Strategic Priorities" heading exists, or it contains no ranked priorities: emit `GAP: {project} has no ranked Strategic Priorities. Populate the Strategy doc's Strategic Priorities section before a strategic review.` and stop. Do not fall back to section-number matching.
 
 ## Step 3 ... Pull the Backlog
 1. Via Linear MCP, list the team's issues across Backlog, Ready, Todo, In Progress, In Review (read-only).
@@ -79,4 +80,4 @@ End every run with a HANDBACK AUDIT block per the house standard. Advisory runs 
 - `scoping-and-queuing-tasks` ... consumes approved items (owns AC, prompt, promotion)
 - `reviewing-completed-work` ... the ground-truth verification standard reused in Step 4
 - `researching-options-and-decisions` ... when a proposed item needs an evaluation before scoping
-- `raw/notion/strategy-doc-template.md` ... the anchor's schema (Section 2 ranked priorities, Section 8 watch signals)
+- `raw/notion/strategy-doc-template.md` ... the anchor's schema (Strategic Priorities + watch-signals sections; numbering varies by doc, so match by heading, not number)
