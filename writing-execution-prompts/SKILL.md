@@ -200,11 +200,12 @@ Human handback is permitted only for: interactive-only auth (browser OAuth / dev
 
 ## Guard Conditions (write to intent)
 
-A STOP or guard condition must test the actual risk it exists to prevent, not a proxy that is merely easier to express. A proxy that over-fires trains the executor to treat guards as advisory, which erodes their authority for the case that genuinely matters.
+A STOP or guard condition must test the actual risk it exists to prevent, not a proxy that is merely easier to express. A proxy that over-fires trains the executor to treat guards as advisory, which erodes their authority for the case that genuinely matters. The opposite failure ... a proxy that under-fires ... is worse: it passes silently while the risk it named goes unchecked.
 
 - State the intent, then choose a check that matches it exactly. If the check can fire when nothing is actually at risk, it is a proxy ... tighten it.
-- Worked example: "STOP if `git status --porcelain` is non-empty" is a proxy for "STOP if there are uncommitted changes to tracked files". `porcelain` also lists untracked files, which a checkout or fast-forward cannot destroy, so the proxy over-fires. Write the intent-matching form: STOP if `git status --porcelain=v1 | grep -v '^??'` is non-empty (uncommitted tracked changes only).
-- The test before shipping a guard: could it fire in a situation where proceeding is actually safe? If yes, rewrite it so the literal condition and the correct behaviour coincide.
+- Worked example (over-fires): "STOP if `git status --porcelain` is non-empty" is a proxy for "STOP if there are uncommitted changes to tracked files". `porcelain` also lists untracked files, which a checkout or fast-forward cannot destroy, so the proxy over-fires. Write the intent-matching form: STOP if `git status --porcelain=v1 | grep -v '^??'` is non-empty (uncommitted tracked changes only).
+- Worked example (under-fires): "if the current branch is not `main`, stay on it" is a proxy for "work on a branch that belongs to THIS task". A leftover session branch carrying another ticket's commits passes the check, so this task's work lands bundled with unrelated changes on a mis-scoped PR (SOC-163: a strategic-review edit landed on `feat/wep-delivery-rules`, and the PR carried unrelated writing-execution-prompts work ... caught only by diffing the PR against main, not by the branch guard). Write the intent-matching form: confirm the branch has no commits vs the base other than this task's (`git log --oneline <base>..HEAD`), or cut a fresh ticket-named branch off the resolved base before the first edit.
+- The test before shipping a guard: could it fire when proceeding is safe (over-fire), or pass when the risk is present (under-fire)? If either, rewrite it so the literal condition and the correct behaviour coincide.
 
 ## Validation Checklist
 
@@ -227,7 +228,7 @@ Before delivering any prompt, verify ALL of the following:
 - [ ] If this is a Cyrus config edit: source-of-truth mirror, pm2 restart, and status check are all in the steps
 - [ ] Every step that can fail on a missing credential or permission is preceded by a Capability Exhaustion Gate discovery phase
 - [ ] The deliverable ends with a Handback Audit block, and every item in it carries an allowed category plus evidence
-- [ ] Every STOP/guard condition tests intent, not a proxy (see Guard Conditions)
+- [ ] Every STOP/guard condition tests intent, not a proxy, and cannot under-fire on a leftover branch (see Guard Conditions)
 - [ ] Literal emails / URLs / values-to-copy are wrapped in backticks (auto-linkify guard)
 
 ## Delivery Format
@@ -259,6 +260,7 @@ The attached Linear sub-document is the single source of truth for the prompt. F
 - Never hand a human a task that an available parent credential could derive or an authenticated API could perform
 - Never hand a human a deploy/provision/config action without first checking the installed CLIs and connected MCPs that perform it (see BES-119: a Vercel deploy was handed back when vercel + gh + op and the Vercel MCP all covered it)
 - Never write a STOP/guard condition as a proxy that over-fires (e.g. "porcelain non-empty" when the intent is uncommitted *tracked* changes). A guard that fires when proceeding is safe erodes the authority of guards that matter ... see Guard Conditions.
+- Never write a branch guard as "if not main, stay on the branch" ... it under-fires on a leftover session branch that carries unrelated commits, bundling this task with another's work on a mis-scoped PR (SOC-163). Verify the branch is empty of non-task commits vs the base (`git log --oneline <base>..HEAD`), or cut a fresh ticket-named branch before the first edit.
 - Never leave a bare email or URL in a prompt delivered through Linear or Notion. Those surfaces auto-linkify them (a bare `michael.d@propell.au` becomes a `[...](mailto:...)` link), and the executor copies the wrapped form verbatim into the target file, corrupting it. Wrap any literal address, URL, or value-to-be-copied in inline backticks so it survives the round-trip. (SOC-158.)
 
 ## Related
