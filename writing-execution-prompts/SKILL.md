@@ -75,6 +75,8 @@ npm run lint             # JS/TS lint
 
 For projects with multiple toolchains: verify each.
 
+When a verification step reads a field *inside* a structured file (plist, JSON, XML), specify a read-only method. Never use a command that rewrites the file as a side effect: `plutil -extract`/`-convert`/`-insert`/`-replace` without an explicit `-o <out>` (or `-o -` for stdout) rewrite the *input file* in place. Inspect with `plutil -p <file>`, `grep`, `plutil -extract <keypath> raw -o - <file>`, or `jq` against a copy. (SOC-160.)
+
 ### 6. Commit & Push Step (MANDATORY)
 
 This is the FINAL numbered step. Always separate, never folded into a previous step. Never trust the executor to commit on its own.
@@ -262,6 +264,7 @@ The attached Linear sub-document is the single source of truth for the prompt. F
 - Never write a STOP/guard condition as a proxy that over-fires (e.g. "porcelain non-empty" when the intent is uncommitted *tracked* changes). A guard that fires when proceeding is safe erodes the authority of guards that matter ... see Guard Conditions.
 - Never write a branch guard as "if not main, stay on the branch" ... it under-fires on a leftover session branch that carries unrelated commits, bundling this task with another's work on a mis-scoped PR (SOC-163). Verify the branch is empty of non-task commits vs the base (`git log --oneline <base>..HEAD`), or cut a fresh ticket-named branch before the first edit.
 - Never leave a bare email or URL in a prompt delivered through Linear or Notion. Those surfaces auto-linkify them (a bare `michael.d@propell.au` becomes a `[...](mailto:...)` link), and the executor copies the wrapped form verbatim into the target file, corrupting it. Wrap any literal address, URL, or value-to-be-copied in inline backticks so it survives the round-trip. (SOC-158.)
+- Never run ... or instruct the executor to run ... a structured-file inspection that mutates the file it reads. `plutil -extract`/`-convert` (and `-insert`/`-replace`) without an explicit `-o` rewrite the *input* plist in place; on SOC-160 `plutil -extract ProgramArguments json <file>` silently converted the live canonical `com.mcpx.up.plist` to a bare JSON array mid-verification, caught only by a follow-up `cat` and repaired via `git restore`. Read-only forms only: `plutil -p <file>`, `grep`, `plutil -extract <keypath> raw -o - <file>`, or operate on a copy.
 
 ## Related
 
