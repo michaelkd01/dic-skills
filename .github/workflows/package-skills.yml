@@ -6,8 +6,6 @@ on:
       - '**/SKILL.md'
       - '**/references/**'
       - '**/assets/**'
-    paths-ignore:
-      - '**/*.skill'
   workflow_dispatch:
 
 permissions:
