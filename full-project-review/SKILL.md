@@ -32,7 +32,7 @@ Express `{SINCE}` as `YYYY-MM-DD` (and keep the time component for tools that ac
 ### Scope
 Identity lives in the project identity registry at `wiki/projects/_registry.md` in Obsidian ... the same source `resuming-active-work` uses. Resolve in this order:
 
-1. **Read the registry** ... `read_note` on `wiki/projects/_registry.md`. Fields per venture: `key`, `aliases`, `linear-team`, `linear-projects`, `repos`, `obsidian`, `notion`, and (once populated per SOC-158) `gmail`, `slack`.
+1. **Read the registry** ... `read_note` on `wiki/projects/_registry.md`. Fields per venture: `key`, `aliases`, `linear-team`, `linear-projects`, `repos`, `obsidian`, `notion`, and (once populated per SOC-158) `gmail`, `slack`. An optional `people:` field (comma-separated key stakeholder names) sharpens the Phase 3 discovery and meetings relevance filters; absence degrades gracefully to key + aliases only.
 2. **Pick the entry** ... if the current Claude Project's custom instructions contain a line `REGISTRY KEY: {key}`, use that entry directly. Otherwise form a hypothesis from Project-scoped memory and recent chats (`conversation_search` / `recent_chats`, which see only this Project) and match it to an entry by `key` or `aliases`.
 3. **Confirm only if ambiguous** ... if no entry matches with confidence, ask which `key` applies rather than guessing.
 
@@ -47,13 +47,13 @@ State the resolved scope and window back in one line before proceeding, e.g.:
 
 Which sources apply is hard-coded per venture below (on/off). The ADDRESSES for each on-source (Gmail account, Slack workspace, Notion page id, Todoist project, Linear team, repos) come from the registry entry ... the matrix says *whether* to pull, the registry says *from where*.
 
-| Project | Gmail | Slack | Notion | Todoist | Threads | Linear | GitHub |
-|---|---|---|---|---|---|---|---|
-| propell | on | on | on | on | on | off | off |
-| anytimeinterview | on | on | on | on | on | on | on |
-| bespoke | on | on | on | on | on | on | on |
+| Project | Gmail | Slack | Notion | Meetings | Todoist | Threads | Linear | GitHub |
+|---|---|---|---|---|---|---|---|---|
+| propell | on | on | on | on | on | on | off | off |
+| anytimeinterview | on | on | on | on | on | on | on | on |
+| bespoke | on | on | on | on | on | on | on | on |
 
-Rationale (do not re-derive per run): all three ventures have an active Slack workspace (Propell Slack; Social Club Slack for AnytimeInterview; Bespoke Slack), so Slack is on for each. AnytimeInterview and Bespoke are the dev ventures (wired Linear team + repos), so Linear + GitHub are on. Propell has no wired Linear team or repos, so Linear + GitHub are off ... it is treated as non-dev here. Notion, Todoist and Threads are on for every venture. A source that is off is skipped silently by design; a source that is on but has no registry address is skipped and reported unresolved (Phase 6).
+Rationale (do not re-derive per run): all three ventures have an active Slack workspace (Propell Slack; Social Club Slack for AnytimeInterview; Bespoke Slack), so Slack is on for each. AnytimeInterview and Bespoke are the dev ventures (wired Linear team + repos), so Linear + GitHub are on. Propell has no wired Linear team or repos, so Linear + GitHub are off ... it is treated as non-dev here. Notion, Todoist and Threads are on for every venture. A source that is off is skipped silently by design; a source that is on but has no registry address is skipped and reported unresolved (Phase 6). Meetings is on for every venture: the Notion AI meeting-notes data source is workspace-global and cross-venture, so relevance filtering happens at pull time (see Phase 3), not in this matrix.
 
 ## Phase 3 ... Per-source pulls (read-only, each filtered to `> {SINCE}`)
 
@@ -61,7 +61,8 @@ Pull each `on` source in full for the resolved scope. Gather first; do not synth
 
 - **Gmail** ... `google_ro__search_gmail_messages` on the registry `gmail:` account, query `after:{SINCE}` (Gmail `YYYY/MM/DD` form) plus any venture domain/label filters. Fetch bodies (`get_gmail_messages_content_batch`, FULL_CONTENT) ONLY for action-worthy hits ... threads that look like a request, decision, or deadline. Do not body-fetch newsletters or receipts.
 - **Slack** ... search the registry `slack:` workspace since `{SINCE}` (`slack_search_public_and_private`). Workspace-wide unless the registry lists specific channels, in which case scope to those. Pull thread context (`slack_read_thread`) only for messages that look actionable.
-- **Notion** ... `notion-fetch` the venture's PROJECT DOCS Overview page (registry `notion:` id) plus any named strategy/board pages in the registry entry. Keep only content with `last_edited_time > {SINCE}`. Note what changed, who changed it, and any decisions recorded.
+- **Notion** ... `notion-fetch` the venture's PROJECT DOCS Overview page (registry `notion:` id) plus any named strategy/board pages in the registry entry. Keep only content with `last_edited_time > {SINCE}`. Note what changed, who changed it, and any decisions recorded. Then run the DISCOVERY SWEEP: one or two `notion-search` semantic queries built from the registry entry ... the venture `key`, its `aliases`, the venture's full trading name, and the `people:` names if present (e.g. for bespoke: "Bespoke Property Concierge BPC HSP concierge" plus a people-oriented query). Run WITHOUT a date filter so relevance, not recency, drives recall. Classify each hit: (1) registry-named page already pulled -> skip; (2) venture-relevant AND edited > {SINCE} -> add to the Notion changed-docs findings; (3) venture-relevant but outside the window (agreements, equity/legal docs, old meeting notes, strategy copies) -> list once under a DISCOVERED heading in BY SOURCE as context, not activity; (4) cross-venture noise (security reviews, supervisor digests, other ventures' pages that merely mention the key) -> drop. Flag duplicate/stale copies of canonical docs (multiple pages with near-identical titles) as a documentation-hygiene candidate routed to the documentation-review skill.
+- **Meetings** ... `notion-query-meeting-notes` filtered to `created_time` within `{SINCE}`->`{NOW}` (exact daterange). The data source is cross-venture with no project property, so relevance-filter the returned rows to the venture: match title and (on fetch) content against the registry `key`, `aliases`, and `people:` names. For each relevant note, `notion-fetch` the page WITHOUT `include_transcript` first ... the summary and Action Items blocks are usually sufficient; fetch the transcript only when an action item is ambiguous. Extract: attendees, decisions, action items, and any commitments with owners. CAVEAT: the query tool may omit the attendees property in its response ... when it does, identify participants from transcript context and mark them as inferred, never as confirmed metadata. Older venture meetings surfaced by the discovery sweep (outside the meetings date window) are reported under DISCOVERED, not re-pulled.
 - **Todoist** ... list active outstanding tasks in the venture's Todoist project (`find-tasks`; venture key -> project per `todoist-review`'s scope map). Surface count, overdue, and P1/P2 titles only. Defer full triage detail to `todoist-review` ... do NOT re-implement its classification, promotion, or nudge mechanics here.
 - **Threads** ... `recent_chats` across the `{SINCE}`->`{NOW}` window plus targeted `conversation_search` for the venture's active topics. NOTE: this sees ONLY the current Claude Project's chats ... conversations in other Projects are invisible to this pull, so treat thread findings as partial and never as the complete record.
 - **Linear + GitHub** (dev ventures only) ... reuse the `resuming-active-work` Phase 2 pull block verbatim:
@@ -75,7 +76,7 @@ Group every finding into two buckets, tagged by source:
 - **NEEDS ACTION** ... anything that implies Michael must do something: an unanswered email asking a question, a Slack request, a decision awaiting him, an overdue or blocking task, a merged PR still needing a Linear close-out, a CI failure. Each item carries its source, a one-line description, and a proposed route (below).
 - **AWARENESS** ... things that happened but need no action from him: FYI emails, informational Slack, doc edits by others, PRs merged and clean, tasks already progressing.
 
-Additionally sweep the pulled comms and threads for **uncaptured action items** ... work discussed or requested but never turned into a Todoist task or Linear ticket. Be conservative; prefer surfacing a candidate for confirmation over inventing one.
+Additionally sweep the pulled comms, threads, and meeting notes for **uncaptured action items** ... work discussed or requested but never turned into a Todoist task or Linear ticket. Be conservative; prefer surfacing a candidate for confirmation over inventing one. Meeting-note commitments are first-class uncaptured-item candidates: a deliverable promised in a meeting with no matching Linear ticket, no Todoist task, or a matching ticket untouched since before the meeting is surfaced for confirmation.
 
 Routing (proposal only ... never auto-execute):
 - Uncaptured item that needs real scoping -> hand to `scoping-and-queuing-tasks` on confirmation.
@@ -109,7 +110,9 @@ UNCAPTURED (confirm to capture)
 BY SOURCE
 - Gmail: {n} threads since {SINCE} ({a} action-worthy) | or "unresolved: no gmail: in registry" | or "off"
 - Slack: {n} messages | "off" | "unresolved"
-- Notion: {n} pages edited since {SINCE}
+- Notion: {n} pages edited since {SINCE} · discovery: {d} related pages ({k} outside registry)
+- Meetings: {n} notes in window, {r} venture-relevant | "unavailable: {error}"
+- DISCOVERED (context, no action implied): {out-of-window venture pages worth knowing about, one line each; omit heading when empty}
 - Todoist: {n} open ({o} overdue, {p1} P1) ... full triage: run todoist-review
 - Threads: {n} chats in window (this Project only)
 - Linear: {n} issues touched | "off (non-dev)"
@@ -133,6 +136,7 @@ DECISIONS PENDING (not handbacks)
 
 - If a venture entry lacks a `gmail:` or `slack:` field (registry not yet populated per SOC-158), SKIP that source and report it as `unresolved: no {field} in registry` in the BY SOURCE block. Do not error, and do not fabricate an address.
 - If a source's MCP is unreachable, report that source as `unavailable: {error}` and continue with the rest ... one dead source never stops the run.
+- If `notion-query-meeting-notes` is unavailable (tool absent from the loaded Notion manifest) or returns no rows, report `Meetings: unavailable` or `Meetings: 0 in window` in BY SOURCE and continue. Never substitute a generic `notion-search` for the meeting-notes query ... it returns non-meeting pages and inflates the count. If the discovery sweep returns only noise, report `discovery: 0 relevant` rather than padding DISCOVERED.
 - If Notion has no Overview page for the venture, render the inline digest and report the snapshot as `not pushed: no notion: page in registry`. Do not create a page unprompted.
 - If the token is unrecognised (Phase 1), STOP before any pull and report the token.
 
