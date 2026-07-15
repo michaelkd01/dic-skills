@@ -19,6 +19,48 @@ Role: Development Planner throughout.
 - "How should we handle ...?"
 - Evaluating a new tool, service, library, or pattern
 - Any question where the answer becomes an ADR or shapes the roadmap
+- **Any request framed as building or self-hosting something a managed or OSS category exists for** ... this fires the Build-vs-Buy Gate below, even when the user did not ask for an evaluation
+
+## Build-vs-Buy Gate (fires BEFORE Step 1)
+
+Most work in this skill arrives already framed as a decision ("X or Y?"). The expensive mistakes don't. They arrive framed as a **build**: "let's set up X", "I'll self-host Y", "we need to stand up Z". That framing is a *how*, and it has silently removed *buy* from the room before any evaluation runs. Once a task enters as a build it flows straight to `scoping-and-queuing-tasks` and execution, and this skill never fires. This gate is the interrupt that stops that.
+
+Worked failure: MCPX was self-hosted over multiple months to give the agents Google Workspace access. A managed provider (Composio) would have covered most of it. The build was never wrong to *consider* ... it was wrong to proceed to without a build-vs-buy scan ever running, because it never arrived framed as a decision. What made it the wrong call ... the 7-day OAuth churn and the verification wall ... was operational tail, invisible in any feature comparison (SOC auth-churn thread, 2026-07-15; ADR pending).
+
+### Trigger ... the shape, not the words
+
+Fire this gate whenever a request implies **building, self-hosting, or standing up a capability for which a managed or off-the-shelf category plausibly exists** ... gateways, queues, auth brokers, schedulers, syncs, dashboards, integrations, pipelines, and the like. The trigger is the *category*, not the phrasing. If a vendor or OSS category exists for the thing, the gate fires.
+
+Claude raises this gate **proactively**, even when the task was framed as a build and no evaluation was requested. The Planner instinct is to help build the thing *well* ... scope it, prompt it, ship it cleanly. This gate's job is to force the prior question first: should it be built at all. Not raising it is the exact failure this gate exists to prevent.
+
+### The reframe (mandatory first move)
+
+Restate the build as an **outcome**, stripping the implementation:
+
+- "self-host a Workspace gateway" -> "give my agents durable Workspace access"
+- "stand up a Postgres task queue" -> "move tasks from A to B reliably"
+- "build a nightly sync" -> "keep X fresh from Y"
+
+Evaluate the *outcome*. A build framed as a how has already eliminated buy; the outcome framing puts it back on the table.
+
+### Time-box
+
+This is a scan, not a project: ~30-60 min, 2-4 options, one pass. It either clears the build or flags a buy worth a full Step 1-6 evaluation. If the scan is genuinely inconclusive, escalate to the full workflow ... but the default is a fast scan. The gate must never become the reason nothing ships.
+
+### Score the operational tail, not the feature list
+
+A feature comparison almost always favours build, because build feels like more control. The axis that actually flips build-vs-buy is **total cost to *operate* over ~12 months**, including everything invisible at build time:
+
+- auth and credential lifecycle ... token expiry, re-consent, verification walls
+- upgrades, patching, breakage from upstream changes
+- the failure tail ... what breaks unattended, and who fixes it
+- the operator's own time, priced as a real cost
+
+Build-cost is a one-time number and the *least* informative one. Score operate-cost.
+
+### Output
+
+A one-screen verdict: the reframed outcome, 2-4 options scored on 12-month operate-cost, and a **BUILD / BUY / SPLIT** call. If BUILD wins, the ADR must record *why build beat buy*, so it can be revisited when the landscape shifts ... vendors move fast, and a buy that loses today can win in six months. Then continue into the workflow below to formalise.
 
 ## Workflow
 
@@ -65,6 +107,7 @@ Use this standard format:
 | **Cost** | {$, time, complexity} | {$, time, complexity} | {$, time, complexity} |
 | **Implementation effort** | {hours/issues} | {hours/issues} | {hours/issues} |
 | **Maintenance burden** | {ongoing cost} | {ongoing cost} | {ongoing cost} |
+| **12-mo operate cost** (auth lifecycle, upgrades, failure tail, your time) | {estimate} | {estimate} | {estimate} |
 | **Constraints/Risks** | {what could go wrong} | {what could go wrong} | {what could go wrong} |
 | **Affects existing ADRs** | {yes/no, which} | {yes/no, which} | {yes/no, which} |
 
@@ -116,6 +159,8 @@ Once the user confirms:
 - Never recommend an option without checking its current pricing/availability (web search)
 - Never propose something that contradicts an existing ADR without explicitly flagging the conflict
 - Always include implementation effort estimates ... "this is easy" is not an estimate
+- Score cost-to-*operate* over ~12 months (auth lifecycle, upgrades, failure tail, operator time), not build-cost or feature count ... build-cost is the least informative number
+- When a task arrives framed as a build, run the Build-vs-Buy Gate before any scoping ... a build framing is not a decision, it is an un-evaluated assumption
 - Always state the tradeoff of the recommended option, not just its benefits
 - If the decision is reversible, say so. If it's hard to reverse, say that too.
 - Prefer options that minimize ongoing maintenance burden for a solo developer
@@ -127,3 +172,5 @@ Once the user confirms:
 - Skipping Step 1 and proposing something that contradicts an existing decision
 - Researching only one option in depth and treating the others as strawmen
 - Forgetting to document the decision after it's made
+- Letting a build-framed or self-host-framed task flow to `scoping-and-queuing-tasks` without running the Build-vs-Buy Gate ... this is the MCPX failure: a build that never got evaluated because it never arrived as a decision
+- Comparing options on features/capability instead of cost-to-operate ... capability comparisons systematically favour build and hide the operational tail that actually decides it
