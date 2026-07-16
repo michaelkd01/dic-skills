@@ -183,6 +183,10 @@ Single prompts: label EXCLUSIVE unless there's a reason not to.
 - Never direct-main push to a branch that auto-deploys to production
 - For two-Vercel-project repos (e.g., AnytimeInterview2): use empty-commit Git integration triggers, never `vercel deploy --prod`, to avoid cross-project contamination
 
+### Operator-Direct / Manual Sessions
+- Tracked edits run in a **worktree**, never as sustained edits on the primary checkout. infra-config: `scripts/dev/new-worktree.sh <branch>`; other repos: a worktree (or a throwaway clone) off the resolved base. Treat the primary checkout as a read/reference surface only.
+- Leave the primary checkout on its **base branch** (`main`/`staging`), clean, at session end. Canonical convention: `docs/worktrees.md` ("the primary checkout must stay clean on main"). A primary checkout parked on a feature branch is a defect ... it tripped SOC-160's Guard 2, and ANY-333 and SOC-162 each left one behind.
+
 ## Capability Exhaustion Gate (MANDATORY)
 
 No prompt, step, verdict, or status update may route work back to a human until every autonomous path has been exhausted and the exhaustion is documented. This gate exists because shallow checks ("not in the Keychain", "not in the first vault searched") have repeatedly been escalated as NOT-CAPABLE and converted into manual human work (see SOC-68), and because actions with an obvious CLI/MCP equivalent have been handed back as "dashboard work" (see BES-119).
@@ -209,6 +213,15 @@ A STOP or guard condition must test the actual risk it exists to prevent, not a 
 - Worked example (under-fires): "if the current branch is not `main`, stay on it" is a proxy for "work on a branch that belongs to THIS task". A leftover session branch carrying another ticket's commits passes the check, so this task's work lands bundled with unrelated changes on a mis-scoped PR (SOC-163: a strategic-review edit landed on `feat/wep-delivery-rules`, and the PR carried unrelated writing-execution-prompts work ... caught only by diffing the PR against main, not by the branch guard). Write the intent-matching form: confirm the branch has no commits vs the base other than this task's (`git log --oneline <base>..HEAD`), or cut a fresh ticket-named branch off the resolved base before the first edit.
 - The test before shipping a guard: could it fire when proceeding is safe (over-fire), or pass when the risk is present (under-fire)? If either, rewrite it so the literal condition and the correct behaviour coincide.
 
+### Primary-checkout precondition
+Any prompt whose steps read from, symlink into, or worktree off a primary checkout must OPEN with a guard asserting that checkout is on its base branch and clean. A parked checkout is a defect, not a surprise ... on SOC-160 the infra-config primary checkout was parked on an ANY-333 feature branch, so the target file was absent and `ln -sfn` would have created a dangling symlink. Standard form:
+
+1. Record branch + HEAD; STOP if there are uncommitted *tracked* changes (`git status --porcelain=v1 | grep -v '^??'`).
+2. If not on base: verify the parked HEAD is on origin (`git branch -r --contains <sha>`), then restore non-destructively (`git checkout <base>` + `git pull --ff-only`). STOP if the parked commit is on no remote (report; do not switch away).
+3. Re-check the precondition the task actually needs (target file present, etc.).
+
+Restore only after the parked work is confirmed backed up on a remote; never stash or discard to force a clean tree.
+
 ## Validation Checklist
 
 Before delivering any prompt, verify ALL of the following:
@@ -232,6 +245,7 @@ Before delivering any prompt, verify ALL of the following:
 - [ ] The deliverable ends with a Handback Audit block, and every item in it carries an allowed category plus evidence
 - [ ] Every STOP/guard condition tests intent, not a proxy, and cannot under-fire on a leftover branch (see Guard Conditions)
 - [ ] Literal emails / URLs / values-to-copy are wrapped in backticks (auto-linkify guard)
+- [ ] Any prompt that reads from, symlinks into, or worktrees off a primary checkout opens with the primary-checkout precondition guard (on base + clean)
 
 ## Delivery Format
 
