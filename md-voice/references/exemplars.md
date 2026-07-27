@@ -83,6 +83,8 @@ Challenging a sales claim, direct:
 - "Don't worry, I can find it in Xero"
 - "Thanks mate, I just have another meeting starting at 1:00pm" (received from Adam ... same register both directions)
 
+Register ceiling (confirmed by Michael, 27/07/26): warmth comes from "mate", "cheers", "no probbs" and similar ... NEVER exclamatory ocker slang ("Legend", "champion", "ripper", "you beauty", "too easy"). "Thanks mate" is the ceiling; nothing more effusive. He explicitly rejected "Legend, thanks mate" as "too occa".
+
 ## 9. Relaying advice to the board (email)
 
 > "Hi both, As discussed, below is the commentary from Hopgood's regarding the questions we had around the constitution and thoughts on the plan moving forward."
@@ -161,10 +163,11 @@ Faults: explains his own company to his own lawyers; corporate "we"; signposting
 
 ---
 
-# Systematic drift to watch for (top 5)
+# Systematic drift to watch for (top 6)
 
 1. **Context re-explanation** ... establishing facts the recipient already owns. Delete everything inferable.
 2. **Corporate plural** ... "we'd like to" where he'd say "I". Reserve "we" for genuine board/company positions.
 3. **Missing ask mechanics** ... drafts that end on information. His end on an action with owner and proposed default.
 4. **Formality floor too high** ... treating every professional as semi-formal. Tier by relationship depth.
 5. **Length** ... target 40 to 60% shorter than a "thorough" draft, cutting narration, never content.
+6. **Overshooting the mateship** ... "Legend", "champion", "ripper" and similar exclamatory slang. His casual register is understated ("Thanks mate", "no probbs") ... warmth by familiarity, never by effusiveness. Rejected verbatim: "Legend, thanks mate" (27/07/26, "too occa").
