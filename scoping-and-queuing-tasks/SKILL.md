@@ -143,13 +143,63 @@ Use `Linear:save_issue` with these inputs:
 **State decision rules:**
 
 - **Backlog**: not yet ready to work; still being scoped.
-- **Todo**: ready for execution. Cyrus picks up from this state when assigned.
-- **In Progress**: work has started.
+- **Ready**: scoped, prompt drafted, file territory mapped, risk class assessed, dependencies declared. Not yet handed to Cyrus. This is the canonical handoff gate ... see [[wiki/decisions/linear-pipeline-states-and-wip-caps]].
+- **Todo**: handed to Cyrus. Cyrus picks up from this state when assigned. Promotion gated by Step 4.5.
+- **In Progress**: Cyrus is actively working.
 - **Investigation Complete**: Cyrus has finished an investigation pass; Planner takes over to scope based on findings.
 - **In Review**: work is done; Supervisor reviews. (See `reviewing-completed-work`.)
 - **Done**: closed.
 
-For most new tasks the natural state is either `Backlog` (still scoping) or `Todo` (ready for Cyrus). Use the `Investigate` label + `Todo` state for the recon-before-execution flow.
+For most new tasks the natural state is either `Backlog` (still scoping) or `Ready` (scoped, awaiting promotion). Use the `Investigate` label + `Todo` state for the recon-before-execution flow.
+
+**Important:** `Todo` is the Cyrus-pickup state. Do NOT set state to `Todo` directly from this step. Tasks promote through the gate in Step 4.5 first.
+
+### Step 4.5 ... Pre-Promotion Gate (non-skippable)
+
+This gate exists because of the 2026-05-16 bulk-assign merge cascade. The canonical rules live in [[wiki/decisions/linear-pipeline-states-and-wip-caps|Linear Pipeline States and WIP Caps]]. Do not skip the checklists below ... they are the planner-side implementation of that ADR.
+
+**Session pre-flight ... run ONCE at the start of any batching session, before any other gate check:**
+
+- [ ] Identify the target venture and its repo(s). ANY → `michaelkd01/anytimeinterview2`. BES → `michaelkd01/bespoke-website-main`. SOC → `michaelkd01/infra-config`. Add others here as ventures onboard.
+- [ ] For each target repo, call `Claude Github MCP:list_pull_requests` with `state: open`.
+- [ ] If any PRs are open, **halt the batching session.** Do not run the per-issue gate below. Do not promote anything. Address the PRs first:
+  - **Cyrus-authored PRs** (carry the marker `<!-- generated-by-cyrus -->`): switch to Supervisor role per `reviewing-completed-work`, issue PASS / FIX / REJECT, and merge or bounce as appropriate.
+  - **Human-authored PRs**: confirm with the user ... merge, hold, or close.
+  - **Stale or abandoned PRs**: confirm closure or revival with the user.
+- [ ] Re-run the pre-flight after each merge. Only when the repo shows zero open PRs (or only PRs the user has explicitly approved leaving open for this session) do we proceed to the per-issue gate.
+
+**Why this is the first check:** open PRs are unmerged state on the base branch. Adding more in-flight work on top compounds the merge surface and recreates the original failure mode. Cyrus-authored PRs are usually already at the Supervisor stage and just need a verdict ... clearing them is faster than starting new work and gets the in-flight count back to zero before the batch begins.
+
+**Backlog → Ready (scoping is complete):**
+
+- [ ] Parent feature issue linked
+- [ ] Intent and Acceptance Criteria written
+- [ ] Execution prompt drafted per the `writing-execution-prompts` skill
+- [ ] **File territory mapped** ... exact paths the task will touch, recorded in the issue body
+- [ ] **Risk class assessed** ... schema / auth / billing = serialise; UI / copy / docs = parallelisable
+- [ ] **Dependencies declared** ... `blocks` / `blockedBy` set on any upstream or downstream sub-issue
+
+If any check fails, leave the issue in `Backlog` and finish scoping.
+
+**Ready → Todo (handoff to Cyrus):**
+
+Before promoting any single issue from Ready to Todo, run all four checks. If you have a batch of related work, run them against each item individually ... do not batch-promote.
+
+- [ ] **WIP cap check:** count Cyrus's current in-flight (`Todo` + `In Progress` + `In Review`). It must be strictly less than 3. If it equals 3, hold.
+- [ ] **Upstream check:** no `blocks` relation pointing at this issue from anything currently in `Todo`, `In Progress`, or `In Review`. Wait for upstream to reach `Done`.
+- [ ] **Orthogonality check:** the file territory recorded on this issue does not overlap with any item currently in `In Progress` or `In Review`. If there is overlap and no `blocks` relation, do NOT promote ... either declare the dependency and serialise, or wait for the conflicting item to merge.
+- [ ] **Batch type check:** if this is part of a related set, confirm which pattern applies and document it on the parent epic:
+  - **Orthogonal** ... different files / different subsystems / different repos. Safe to parallel-promote up to the cap.
+  - **Sequenced** ... `blocks` relations set on each item. Promote one at a time, bottom-up.
+  - **Stacked** ... branches stack off a parent branch, not `main`. Promote one at a time, bottom-up. (Note: the Cyrus `orchestrator` label still spawns one worktree per sub-issue as of 2026-05-16; upstream [issue #1048](https://github.com/cyrusagents/cyrus/issues/1048) tracks unified-worktree support. Until that lands, treat orchestrator label work the same as manual sequencing.)
+
+If any check fails, leave the issue in `Ready` and pick a different item or wait.
+
+**Anti-patterns this gate exists to prevent:**
+
+- Bulk-assigning N issues to Cyrus in one planner action. The 2026-05-16 incident processed 25 issues serially through Cyrus but produced 25 PRs against `main` that collided on shared files. Even with serial execution, parallel branches off `main` is the collision vector.
+- Promoting an issue with overlapping file territory and no `blocks` relation, hoping merges will sort it out.
+- Treating the WIP cap as advisory because "this one is small". The cap is the cap.
 
 ### Step 5 ... Produce the Claude Code Prompt
 
@@ -194,9 +244,13 @@ For projects with explicit deploy hooks, the project's Architecture & Decisions 
 - Setting state to `Todo` before AC and test spec are validated (Cyrus may pick up incomplete work)
 - Approving a test spec that only covers happy paths (edge cases catch most bugs)
 - Forgetting to apply scope labels (Bespoke specifically uses `bespoke-portal` / `bespoke-website` / `bespoke-api` for routing)
+- **Bulk-promoting multiple issues to `Todo` in one planner action.** Cyrus processes serially per pm2 instance, but produces parallel PRs from `main` ... the merge phase collides on shared files. Promote one at a time through Step 4.5. The 2026-05-16 incident documented in [[wiki/decisions/linear-pipeline-states-and-wip-caps]] is the canonical example of this failure.
+- **Overriding the WIP cap because "this one is small".** The cap is `Todo + In Progress + In Review < 3` per team, full stop. If Cyrus is at cap, hold in Ready.
+- **Ignoring file-territory overlap between Ready items.** Two Ready items that touch the same file must not both be promoted ... either declare a `blocks` relation and serialise, or wait for one to merge before promoting the other.
 
 ## See Also
 
+- `wiki/decisions/linear-pipeline-states-and-wip-caps.md` ... canonical state model, WIP caps, hardened pre-promotion checklist (referenced by Step 4.5)
 - `wiki/decisions/linear-project-description-template.md` ... the five-section template referenced in Step 2
 - `_shared/repo-paths.md` ... canonical Project ↔ Repo Path mapping
 - `writing-execution-prompts` ... format for manual Claude Code prompts
