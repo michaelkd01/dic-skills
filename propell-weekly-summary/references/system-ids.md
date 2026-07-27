@@ -40,7 +40,7 @@ Known schema drift (27/07/26): Deal Decision value 'Approved - Conditional' has 
 Known extraction notes (updated 28/07/26, per Ken/Neal):
 - **Approved lost ... RESOLVED (27/07).** The built-in measure `Amount Approved: Lost` is Cancelled-only and sums drawdown (Amount Approved = Drawdown_Amount__c) ... never use it. Pack basis, confirmed: SUM(Total Loan Amount) where Deal Decision = 'Approved' AND Deal Status IN ('Cancelled', 'Expired'), Approved Lost Date in period, all reasons including Unknown. Definition lives in the manifest; verify reproduction on next run.
 - **WA interest rate ... RESOLVED (28/07).** The pack-side calc was the error; Neal fixed it and added a tooltip showing the cases behind the calculation. The extraction formula is authoritative (definition in the manifest). Floor-flag suspension lifted. Verify against the fixed tooltip on next run.
-- **Funded definition (28/07).** Canonical form is two conditions: Deal Status = 'Funded' AND Deal Decision = 'Approved'. Funded-but-not-Approved rows are status inconsistencies (Ken raising with Khai) ... never count them.
+- **Funded definition (28/07).** Canonical form is two conditions: Deal Status = 'Funded' AND Deal Decision = 'Approved'. The loans this excludes are hardship restructured loans, which never have a Deal Decision set ... correct exclusions by design, not data errors. The Deal Decision condition and the Refinance Reason != Hardship filter are structurally equivalent for this population; keep both for robustness.
 
 ## Source of truth hierarchy
 
