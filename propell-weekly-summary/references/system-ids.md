@@ -37,7 +37,9 @@ Known site defect: get-view-data returns scaffold `test,1,1,1` on every workshee
 
 Known schema drift (27/07/26): Deal Decision value 'Approved - Conditional' has been removed from the case spine; awaiting completion uses Deal Decision = 'Approved' + Deal Status = 'In Progress' (definition lives in the manifest). 'Days Since Approval Group' returns 'Other' via VizQL ... aging comes from the pack's Awaiting Completion detail table, not this field.
 
-Known extraction gaps (27/07/26, escalated to Ken): WA interest rate and approved-lost cannot currently be reproduced from the case spine (no 'Total Loan Amount' field; approved-lost misses at least case 00010208). The manifest marks both VERIFICATION FAILED; the emailed pack is authoritative for these two metrics until Ken resolves the basis.
+Known extraction notes (updated 27/07/26 pm, per Ken):
+- **Approved lost ... RESOLVED.** The built-in measure `Amount Approved: Lost` is Cancelled-only and sums drawdown (Amount Approved = Drawdown_Amount__c) ... never use it. Pack basis, confirmed: SUM(Total Loan Amount) where Deal Decision = 'Approved' AND Deal Status IN ('Cancelled', 'Expired'), Approved Lost Date in period, all reasons including Unknown. Definition lives in the manifest; verify reproduction on next run.
+- **WA interest rate ... OPEN, pack-side error suspected.** Extraction (2.41%/2.40%) vs pack (2.60%/2.50%) on identical funded sets; Ken assesses the pack side as the likely logic error, referred to Neal. Both bases provisional until Neal confirms; per the manifest, publish the pack figure with a variance note and do not fire the 2.40% floor flag off either basis alone.
 
 ## Source of truth hierarchy
 
