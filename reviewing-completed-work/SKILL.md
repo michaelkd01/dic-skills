@@ -132,7 +132,7 @@ For each AC item, assess:
 Sources of evidence:
 - PR diff (`Claude Github MCP (Personal):pull_request_read` get_files)
 - CI status (checks)
-- Cyrus's run summary comment on the Linear issue
+- Cyrus's run summary comment on the Linear issue ... a **pointer to where to look**, never evidence in itself. Every claim in a run summary is a claim *about* an artefact; verify it against the artefact.
 - Build/test/lint output (visible in CI checks)
 
 ### B3.5. Validate Test Contract (Code tasks only)
@@ -168,6 +168,23 @@ Beyond the AC, verify:
 - [ ] No existing ADRs were violated
 - [ ] Commit message follows conventional format and includes the issue identifier
 - [ ] No existing functionality was removed (unless AC explicitly required it)
+
+### B4.5. Narrative-Surface Accuracy
+
+Applies whenever the session under review both mutated state and authored or edited a durable narrative surface: PR title or body, Linear issue description or comment, wiki note, Notion page, or commit message body.
+
+Re-read each narrative surface **from its source** (GitHub API, Linear MCP, Obsidian) rather than from the executor's read-back. Confirm it does not describe a state that the same session subsequently changed.
+
+- [ ] PR body describes the current head state, not an intermediate one
+- [ ] No section describes work as blocked or pending that the same session later completed
+- [ ] No instruction persists that the session's own later steps superseded
+- [ ] No credential-handling anti-pattern persists ... plaintext secrets, `export SOMETHING_PASSWORD=`, secrets in argv ... even with empty or placeholder values, since the pattern outlives the value in repo history
+- [ ] Mid-session Linear comments that contradict the final state carry a correcting comment
+- [ ] Where the executor read a surface back in its report, the read-back matches the source
+
+Stale narrative is **FIX-MINOR** when the surface is contradicted by an accurate correction elsewhere in the same PR or issue. It is **FIX-MAJOR** when the stale text is the only description and would mislead at merge ... a squash-merge inherits the PR body verbatim into `main`'s history.
+
+Incident basis: infra-config PR #72, three consecutive rounds. Every report was internally coherent; GitHub disagreed each time.
 
 ### B5. Issue Verdict
 
@@ -250,6 +267,7 @@ For projects with explicit deploy hooks, the project's Architecture & Decisions 
 
 ## Validation Principles
 
+- **The report is not the artefact.** An executor summary is a claim about an artefact, never the artefact. Read the PR diff, PR body, issue state, and file contents from source before issuing any verdict. A report can be complete, well-structured, and entirely self-consistent while diverging from what was actually committed ... coherence is not evidence.
 - **AC is the contract.** If the AC says X and the execution did Y (even if Y is objectively better), flag it. The user decides whether to accept the deviation.
 - **Test contract is binding.** If approved tests were weakened or skipped to achieve a pass, that's a FIX-MAJOR. Tests are the spec, not the implementation.
 - **Silence is not approval.** If you can't verify a criterion from the available evidence, mark it PARTIAL and ask for more information.
@@ -266,6 +284,8 @@ For projects with explicit deploy hooks, the project's Architecture & Decisions 
 - Accepting modified test assertions without flagging (test contract violation)
 - Issuing PASS on a Code task where no CI output is visible
 - Issuing PASS on a `verify:device` (or rendering-critical) change without real-browser/device evidence ... grep-green is not render-green (817d339; BES-205 first pass)
+- Issuing any verdict from the executor's summary without reading the artefact from source
+- Issuing PASS while a PR body or issue description still describes a state the same session changed ... the squash message inherits the body (infra-config PR #72)
 
 ## Handback Audit (MANDATORY final output)
 
