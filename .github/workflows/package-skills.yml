@@ -6,6 +6,13 @@ on:
       - '**/SKILL.md'
       - '**/references/**'
       - '**/assets/**'
+  push:
+    branches:
+      - main
+    paths:
+      - '**/SKILL.md'
+      - '**/references/**'
+      - '**/assets/**'
   workflow_dispatch:
 
 permissions:
@@ -14,11 +21,11 @@ permissions:
 jobs:
   package:
     runs-on: ubuntu-latest
-    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository
+    if: github.event_name == 'workflow_dispatch' || github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.head_ref }}
+          ref: ${{ github.head_ref || github.ref_name }}
 
       - uses: actions/setup-python@v5
         with:
@@ -37,7 +44,7 @@ jobs:
           if [ -n "$(git status --porcelain -- '**/*.skill')" ]; then
             git add -- '**/*.skill'
             git commit -m 'ci: repackage skills [skip ci]'
-            git push origin HEAD:${{ github.head_ref }}
+            git push origin HEAD:${{ github.head_ref || github.ref_name }}
           else
             echo 'No skill changes to commit.'
           fi
